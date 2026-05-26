@@ -59,3 +59,32 @@ def test_theme_cookies_extracts_cookie_values():
     assert result["_djust_theme_pack"] == "bootstrap5"
     assert result["_djust_theme"] == "dark"
     assert result["_djust_theme_mode"] == "dark"
+
+
+@pytest.mark.django_db
+class TestHomeView:
+    def _mount(self):
+        from apps.home.views import HomeView
+
+        rf = RequestFactory()
+        req = rf.get("/")
+        req.user = AnonymousUser()
+        view = HomeView()
+        view.mount(req)
+        return view
+
+    def test_mount_initializes_count_to_zero(self):
+        view = self._mount()
+        assert view.count == 0
+
+    def test_increment_increases_count(self):
+        view = self._mount()
+        view.increment()
+        assert view.count == 1
+
+    def test_increment_is_cumulative(self):
+        view = self._mount()
+        view.increment()
+        view.increment()
+        view.increment()
+        assert view.count == 3

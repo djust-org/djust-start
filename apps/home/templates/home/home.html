@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load live_tags %}
+
+{% block title %}My App{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto; padding: 0 1rem;">
+    <h1>Welcome to djust</h1>
+    <p>Edit <code>apps/home/views.py</code> to start building your app.</p>
+
+    <div style="margin: 2rem 0; padding: 1.5rem; border: 1px solid currentColor; border-radius: 8px;">
+        <p>Counter: <strong>{{ count }}</strong></p>
+        <button dj-click="increment">Increment</button>
+    </div>
+
+    <p>
+        <a href="https://docs.djust.org/getting-started/" target="_blank" rel="noopener">
+            Read the getting-started guide &rarr;
+        </a>
+    </p>
+</div>
+{% endblock %}
