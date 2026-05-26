@@ -2,7 +2,7 @@
 
 Minimal opinionated starter for [djust](https://djust.org) — from `git clone` to a running app in under 2 minutes.
 
-**Requires:** Python 3.12+, make
+**Requires:** Python 3.12+, [uv](https://docs.astral.sh/uv/), make
 
 ## 1. Clone and install
 
@@ -25,5 +25,6 @@ Visit [http://localhost:8000](http://localhost:8000) — you should see a welcom
 ## 3. Next steps
 
 - Add views in `apps/home/views.py` or create a new app under `apps/`
-- Register new view modules in `config/settings.py` → `LIVEVIEW_ALLOWED_MODULES`
+- Register new view modules in `config/settings/base.py` → `LIVEVIEW_ALLOWED_MODULES`
+- Switch to `config/settings/prod.py` in production via `DJANGO_SETTINGS_MODULE=config.settings.prod`
 - [docs.djust.org/getting-started](https://docs.djust.org/getting-started/) — full guide

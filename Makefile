@@ -23,7 +23,7 @@ install: venv
 
 dev:
 	$(PY) manage.py migrate --run-syncdb
-	$(VENV)/bin/daphne -b 0.0.0.0 -p 8000 config.asgi:application
+	$(VENV)/bin/uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --reload
 
 test:
 	$(VENV)/bin/pytest
