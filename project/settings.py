@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
 
 INSTALLED_APPS = [
     "daphne",
@@ -35,6 +35,7 @@ except ImportError:
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -45,20 +46,26 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "project.urls"
 
+_context_processors = [
+    "django.template.context_processors.debug",
+    "django.template.context_processors.request",
+    "django.contrib.auth.context_processors.auth",
+    "django.contrib.messages.context_processors.messages",
+    "apps.shared.context_processors.theme_cookies",
+]
+try:
+    import djust.theming.context_processors  # noqa: F401
+    _context_processors.append("djust.theming.context_processors.theme_context")
+except ImportError:
+    pass
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "apps.shared.context_processors.theme_cookies",
-                "djust.theming.context_processors.theme_context",
-            ],
+            "context_processors": _context_processors,
         },
     },
 ]
@@ -82,7 +89,11 @@ if _database_url:
     if _scheme in ("sqlite", "sqlite3"):
         _path = _parsed.path or ""
         if _path.startswith("//"):
+            # four-slash: sqlite:////abs/path → /abs/path
             _path = _path[1:]
+        elif _path.startswith("/"):
+            # three-slash: sqlite:///mydb.db → treat as BASE_DIR relative
+            _path = str(BASE_DIR / _path.lstrip("/"))
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.sqlite3",
@@ -121,7 +132,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 LIVEVIEW_ALLOWED_MODULES = ["apps.home.views"]
 
 DJUST_STATE_BACKEND = os.environ.get("DJUST_STATE_BACKEND", "memory")
-if DJUST_STATE_BACKEND.startswith("redis://"):
+if DJUST_STATE_BACKEND.startswith(("redis://", "rediss://")):
     DJUST_REDIS_URL = DJUST_STATE_BACKEND
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
