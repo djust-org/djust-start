@@ -9,14 +9,19 @@ git clone https://github.com/djust-org/djust-start.git myapp
 cd myapp
 ```
 
-Rename `project/` to your project name, then update the three references to it:
+Rename `project/` to your project name, then update all references to it:
 
 ```bash
 mv project myapp
 # In manage.py, myapp/asgi.py, myapp/wsgi.py:
 #   replace "project.settings" → "myapp.settings"
 #   replace "project.asgi"     → "myapp.asgi"   (in asgi.py)
+# In myapp/settings.py:
+#   replace ROOT_URLCONF       → "myapp.urls"
+#   replace ASGI_APPLICATION   → "myapp.asgi.application"
 ```
+
+Tip: `grep -r "project\." . --include="*.py"` shows all the spots to update.
 
 ## 2. Configure
 

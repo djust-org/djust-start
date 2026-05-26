@@ -13,6 +13,7 @@ venv:
 	python3 -m venv $(VENV)
 
 install: venv
+	$(VENV)/bin/pip install uv
 	$(VENV)/bin/uv pip install -e ".[dev]"
 
 dev:
