@@ -1,22 +1,66 @@
 {% extends "base.html" %}
 {% load live_tags %}
+{% load djust_components %}
 
 {% block title %}My App{% endblock %}
 
 {% block content %}
-<div dj-view="apps.home.views.HomeView" style="max-width: 600px; margin: 4rem auto; padding: 0 1rem;">
-    <h1>Welcome to djust</h1>
-    <p>Edit <code>apps/home/views.py</code> to start building your app.</p>
+<div dj-view="apps.home.views.HomeView" style="max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem;">
 
-    <div style="margin: 2rem 0; padding: 1.5rem; border: 1px solid currentColor; border-radius: 8px;">
-        <p>Counter: <strong>{{ count }}</strong></p>
-        <button dj-click="increment">Increment</button>
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <img src="https://djust.org/static/images/djust-logo.png" alt="djust" style="height: 64px; width: auto; margin-bottom: 1.5rem;">
+    <h1 style="font-size: 2.25rem; font-weight: 700; margin-bottom: 0.75rem;">Welcome to djust</h1>
+    <p style="color: hsl(var(--muted-foreground)); max-width: 480px; margin: 0 auto;">
+      Your app starts here. Edit <code>apps/home/views.py</code> to begin.
+    </p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem;">
+
+    <div class="card">
+      <div class="card-header">
+        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground));">@action counter</span>
+      </div>
+      <div class="card-body" style="text-align: center;">
+        <div style="font-size: 3.5rem; font-weight: 700; line-height: 1; margin-bottom: 1.5rem;">{{ count }}</div>
+        {% dj_button label="Increment" event="increment" variant="primary" %}
+      </div>
     </div>
 
-    <p>
-        <a href="https://docs.djust.org/getting-started/" target="_blank" rel="noopener">
-            Read the getting-started guide &rarr;
+    <div class="card">
+      <div class="card-header">
+        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground));">Theming</span>
+      </div>
+      <div class="card-body">
+        <p style="color: hsl(var(--muted-foreground)); font-size: 0.9rem; margin: 0;">
+          60+ theme packs, dark mode built-in. Use the ⚙ panel in the nav to explore.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground));">Components</span>
+      </div>
+      <div class="card-body">
+        <p style="color: hsl(var(--muted-foreground)); font-size: 0.9rem; margin: 0 0 0.75rem;">
+          Buttons, cards, modals and more.
+        </p>
+        <a href="https://docs.djust.org/components/" target="_blank" rel="noopener"
+           style="font-size: 0.875rem; color: hsl(var(--primary)); text-decoration: none;">
+          docs.djust.org/components/ &rarr;
         </a>
-    </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="text-align: center;">
+    <a href="https://docs.djust.org/getting-started/" target="_blank" rel="noopener"
+       style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-decoration: none;">
+      Read the getting-started guide &rarr;
+    </a>
+  </div>
+
 </div>
 {% endblock %}

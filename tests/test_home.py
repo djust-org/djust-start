@@ -101,3 +101,13 @@ class TestHomeView:
 def test_home_page_returns_200(client):
     response = client.get("/")
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_home_page_contains_feature_cards(client):
+    response = client.get("/")
+    content = response.content.decode()
+    assert "Welcome to djust" in content
+    assert "@action counter" in content
+    assert "Theming" in content
+    assert "Components" in content
