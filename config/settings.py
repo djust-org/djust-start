@@ -4,28 +4,38 @@ from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY — set SECRET_KEY in .env before deploying to production.
 SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
+
+# Set DEBUG=False in production. Never commit True to a public repo.
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
+
+# Comma-separated list of allowed hostnames. In production add your domain.
+# Example: ALLOWED_HOSTS=myapp.com,www.myapp.com
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
 
 INSTALLED_APPS = [
-    "daphne",
+    "daphne",                          # ASGI server (required for WebSockets)
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "djust",
-    "apps.shared",
-    "apps.home",
+    "djust",                           # Core LiveView framework
+    "apps.shared",                     # BaseLiveView, context processors, theming handlers
+    "apps.home",                       # Home page — your first LiveView
 ]
 
+# djust[theming] — 60+ theme packs, dark/light mode, CSS variable system.
+# Installed automatically when djust[theming] extra is present.
 try:
     import djust.theming  # noqa: F401
     INSTALLED_APPS.append("djust.theming")
 except ImportError:
     pass
 
+# djust[components] — buttons, cards, modals, tabs, and more.
+# Installed automatically when djust[components] extra is present.
 try:
     import djust.components  # noqa: F401
     INSTALLED_APPS.append("djust.components")
@@ -34,7 +44,7 @@ except ImportError:
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Static file serving (compression + caching)
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -50,6 +60,8 @@ _context_processors = [
     "django.template.context_processors.request",
     "django.contrib.auth.context_processors.auth",
     "django.contrib.messages.context_processors.messages",
+    # Extracts theme cookies to plain strings — required because the Rust
+    # template renderer cannot serialise HttpRequest objects directly.
     "apps.shared.context_processors.theme_cookies",
 ]
 try:
@@ -72,15 +84,20 @@ TEMPLATES = [
 ASGI_APPLICATION = "config.asgi.application"
 WSGI_APPLICATION = "config.wsgi.application"
 
+# State channel layer. InMemoryChannelLayer is fine for single-process dev.
+# Switch to RedisChannelLayer in production (see DJUST_STATE_BACKEND below).
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
 }
 
-# DATABASE_URL: sqlite and postgres schemes supported.
-# No DATABASE_URL → SQLite (fine for local dev, no action needed).
-# Ref: same logic as djust-scaffold PR #46 fix.
+# DATABASE_URL — unset defaults to SQLite (fine for local dev, no action needed).
+# Supported schemes:
+#   sqlite:///db.sqlite3          → BASE_DIR-relative SQLite file
+#   sqlite:////abs/path/db.sqlite → absolute path SQLite
+#   postgres://user:pass@host/db  → PostgreSQL
+#   postgresql://user:pass@host/db
 _database_url = os.environ.get("DATABASE_URL", "")
 if _database_url:
     _parsed = urlparse(_database_url)
@@ -127,20 +144,32 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-# Add apps.home.views here when you add new LiveViews.
+# Register every module that contains LiveView subclasses you want mountable
+# over WebSockets. Unregistered views will silently fail to connect.
+# Example: LIVEVIEW_ALLOWED_MODULES = ["apps.home.views", "apps.dashboard.views"]
 LIVEVIEW_ALLOWED_MODULES = ["apps.home.views"]
 
+# LiveView state backend.
+# "memory"          — in-process, lost on restart. Fine for single-server dev.
+# "redis://..."     — Redis. Required for multi-process or multi-server deploys.
+# "rediss://..."    — Redis over TLS.
 DJUST_STATE_BACKEND = os.environ.get("DJUST_STATE_BACKEND", "memory")
 if DJUST_STATE_BACKEND.startswith(("redis://", "rediss://")):
     DJUST_REDIS_URL = DJUST_STATE_BACKEND
 
 DJUST_CONFIG = {
+    # V001/V005 fire on BaseLiveView because it has no template_name and is
+    # intentionally abstract — not meant to be mounted directly.
     "suppress_checks": ["V001", "V005"],
 }
 
-# Silence upstream contrast warnings from djust-theming's default preset.
+# djust_theming.W001 — contrast ratio warnings on the built-in default preset.
+# These are upstream issues in the theme pack, not fixable in user code.
 SILENCED_SYSTEM_CHECKS = ["djust_theming.W001"]
 
+# djust-theming options.
+# default_mode: "dark" | "light" | "system"
+# default_preset: name of a theme preset (e.g. "default", "nord", "rose")
 DJUST_THEMING = {
     "default_mode": "dark",
 }
