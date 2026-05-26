@@ -88,3 +88,10 @@ class TestHomeView:
         view.increment()
         view.increment()
         assert view.count == 3
+
+    def test_context_data_includes_count(self):
+        view = self._mount()
+        view.increment()
+        ctx = view.get_context_data()
+        assert "count" in ctx
+        assert ctx["count"] == 1
