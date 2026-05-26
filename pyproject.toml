@@ -13,7 +13,7 @@ dependencies = [
 dev = ["pytest", "pytest-django", "ruff"]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "project.settings"
+DJANGO_SETTINGS_MODULE = "config.settings"
 pythonpath = ["."]
 
 [tool.ruff]

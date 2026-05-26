@@ -44,7 +44,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "project.urls"
+ROOT_URLCONF = "config.urls"
 
 _context_processors = [
     "django.template.context_processors.debug",
@@ -70,8 +70,8 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = "project.asgi.application"
-WSGI_APPLICATION = "project.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 CHANNEL_LAYERS = {
     "default": {

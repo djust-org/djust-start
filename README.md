@@ -2,26 +2,12 @@
 
 Minimal opinionated starter for [djust](https://djust.org) — from `git clone` to a running app in under 2 minutes.
 
-## 1. Clone and rename
+## 1. Clone and install
 
 ```bash
 git clone https://github.com/djust-org/djust-start.git myapp
 cd myapp
 ```
-
-Rename `project/` to your project name, then update all references to it:
-
-```bash
-mv project myapp
-# In manage.py, myapp/asgi.py, myapp/wsgi.py:
-#   replace "project.settings" → "myapp.settings"
-#   replace "project.asgi"     → "myapp.asgi"   (in asgi.py)
-# In myapp/settings.py:
-#   replace ROOT_URLCONF       → "myapp.urls"
-#   replace ASGI_APPLICATION   → "myapp.asgi.application"
-```
-
-Tip: `grep -r "project\." . --include="*.py"` shows all the spots to update.
 
 ## 2. Configure
 
@@ -49,5 +35,5 @@ Visit [http://localhost:8000](http://localhost:8000) — you should see a welcom
 ## 4. Next steps
 
 - Add views in `apps/home/views.py` or create a new app under `apps/`
-- Register new view modules in `project/settings.py` → `LIVEVIEW_ALLOWED_MODULES`
+- Register new view modules in `config/settings.py` → `LIVEVIEW_ALLOWED_MODULES`
 - [docs.djust.org/getting-started](https://docs.djust.org/getting-started/) — full guide
