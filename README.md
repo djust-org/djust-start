@@ -2,6 +2,8 @@
 
 Minimal opinionated starter for [djust](https://djust.org) — from `git clone` to a running app in under 2 minutes.
 
+**Requires:** Python 3.12+, make
+
 ## 1. Clone and install
 
 ```bash
