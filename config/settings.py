@@ -163,6 +163,44 @@ DJUST_CONFIG = {
     "suppress_checks": ["V001", "V005"],
 }
 
+# Fine-grained djust behaviour. All values below are the defaults — uncomment
+# and change only what you need. Full reference: docs.djust.org/api/config/
+LIVEVIEW_CONFIG = {
+    # CSS framework used for auto-generated form field classes.
+    # Options: "bootstrap5" | "bootstrap4" | "tailwind" | "plain" | None
+    # "css_framework": "bootstrap5",
+
+    # Event handler security mode.
+    # "strict" — only @event_handler / @action decorated methods can be called (default, recommended).
+    # "warn"   — allow undecorated methods but log a deprecation warning.
+    # "open"   — no restriction (legacy, not recommended).
+    # "event_security": "strict",
+
+    # Set to False to fall back to HTTP polling instead of WebSockets.
+    # Useful for environments that don't support WebSockets.
+    # "use_websocket": True,
+
+    # Hot View Replacement — reloads LiveView Python code in dev without
+    # disconnecting the client or losing state. Requires watchdog (in dev deps).
+    # "hvr_enabled": True,
+
+    # Rate limiting for WebSocket events (token bucket algorithm).
+    # "rate_limit": {
+    #     "rate": 100,                  # sustained events per second per connection
+    #     "burst": 20,                  # burst allowance above the rate
+    #     "max_connections_per_ip": 10, # max concurrent connections per IP
+    # },
+
+    # Maximum incoming WebSocket message size in bytes. 0 = no limit (not recommended in production).
+    # "max_message_size": 65536,  # 64 KB default
+
+    # Enable detailed VDOM patching logs in the server console (dev only).
+    # "debug_vdom": False,
+
+    # Raise TypeError for non-serializable view state values instead of silently coercing to str().
+    # "strict_serialization": False,
+}
+
 # djust_theming.W001 — contrast ratio warnings on the built-in default preset.
 # These are upstream issues in the theme pack, not fixable in user code.
 SILENCED_SYSTEM_CHECKS = ["djust_theming.W001"]
