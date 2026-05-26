@@ -9,7 +9,7 @@ for ThemeManager.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from djust.template_tags import TagHandler, register
 
@@ -34,7 +34,7 @@ class _MockRequest:
         self.session = _MockSession()
 
 
-def _make_mock_request(context: Dict[str, Any]) -> "_MockRequest":
+def _make_mock_request(context: dict[str, Any]) -> "_MockRequest":
     return _MockRequest(
         {
             "djust_theme_preset": context.get("_djust_theme_preset", ""),
@@ -45,17 +45,20 @@ def _make_mock_request(context: Dict[str, Any]) -> "_MockRequest":
     )
 
 
-def _format_kwarg(key: str, value: str) -> str:
+def _format_kwarg(key, value) -> str:
+    if isinstance(value, bool):
+        return " %s=%s" % (key, value)
+    if isinstance(value, int):
+        return " %s=%s" % (key, value)
+    value = str(value)
     if value in ("true", "True"):
         return " %s=True" % key
     if value in ("false", "False"):
         return " %s=False" % key
-    if value.isdigit():
-        return " %s=%s" % (key, value)
     return ' %s="%s"' % (key, value)
 
 
-def _render_theme_tag(tag_str: str, context: Dict[str, Any]) -> str:
+def _render_theme_tag(tag_str: str, context: dict[str, Any]) -> str:
     from django.template import Context, Template
 
     tpl = "{% load theme_tags %}" + tag_str
@@ -69,7 +72,7 @@ def _render_theme_tag(tag_str: str, context: Dict[str, Any]) -> str:
 
 @register("theme_head")
 class ThemeHeadHandler(TagHandler):
-    def render(self, args: List[str], context: Dict[str, Any]) -> str:
+    def render(self, args: list[str], context: dict[str, Any]) -> str:
         kwargs_str = ""
         for arg in args:
             resolved = self._resolve_arg(arg, context)
@@ -80,7 +83,7 @@ class ThemeHeadHandler(TagHandler):
 
 @register("theme_panel")
 class ThemePanelHandler(TagHandler):
-    def render(self, args: List[str], context: Dict[str, Any]) -> str:
+    def render(self, args: list[str], context: dict[str, Any]) -> str:
         kwargs_str = ""
         for arg in args:
             resolved = self._resolve_arg(arg, context)
