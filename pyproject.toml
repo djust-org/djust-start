@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-django", "ruff"]
+dev = ["pytest", "pytest-django", "ruff", "watchdog"]
 
 [tool.setuptools]
 packages = []

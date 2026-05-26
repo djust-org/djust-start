@@ -10,7 +10,6 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,1
 
 INSTALLED_APPS = [
     "daphne",
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -134,6 +133,13 @@ LIVEVIEW_ALLOWED_MODULES = ["apps.home.views"]
 DJUST_STATE_BACKEND = os.environ.get("DJUST_STATE_BACKEND", "memory")
 if DJUST_STATE_BACKEND.startswith(("redis://", "rediss://")):
     DJUST_REDIS_URL = DJUST_STATE_BACKEND
+
+DJUST_CONFIG = {
+    "suppress_checks": ["V001", "V005"],
+}
+
+# Silence upstream contrast warnings from djust-theming's default preset.
+SILENCED_SYSTEM_CHECKS = ["djust_theming.W001"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LANGUAGE_CODE = "en-us"
