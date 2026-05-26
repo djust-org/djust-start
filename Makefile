@@ -18,7 +18,7 @@ install: venv
 
 dev:
 	$(PY) manage.py migrate --run-syncdb
-	$(VENV)/bin/daphne -b 0.0.0.0 -p 8000 project.asgi:application
+	$(VENV)/bin/daphne -b 0.0.0.0 -p 8000 config.asgi:application
 
 test:
 	$(VENV)/bin/pytest
