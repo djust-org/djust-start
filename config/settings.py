@@ -214,6 +214,48 @@ DJUST_THEMING = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+TIME_ZONE = "UTC"  # Change to your app's timezone, e.g. "America/New_York", "Europe/London"
 USE_I18N = True
 USE_TZ = True
+
+# ---------------------------------------------------------------------------
+# Production settings
+# Uncomment and configure these before deploying. Keep DEBUG=False in .env.
+# ---------------------------------------------------------------------------
+
+# Required when running behind a reverse proxy, load balancer, or PaaS.
+# Without this, Django rejects requests whose Host header doesn't match
+# ALLOWED_HOSTS even when a trusted proxy forwards them.
+# Example: CSRF_TRUSTED_ORIGINS = ["https://myapp.com", "https://www.myapp.com"]
+# CSRF_TRUSTED_ORIGINS = []
+
+# Force HTTPS. Enable once your domain has a valid TLS certificate.
+# SECURE_SSL_REDIRECT = True
+# SECURE_HSTS_SECONDS = 31536000        # 1 year — tells browsers to always use HTTPS
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+
+# Prevent cookies being sent over plain HTTP.
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+
+# Email — required for Django's error reporting and password reset.
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+# EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+# DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@example.com")
+
+# Error reporting — sends tracebacks to ADMINS when DEBUG=False.
+# ADMINS = [("Your Name", "you@example.com")]
+
+# Cache — required for session scaling and rate limiting under load.
+# Swap InMemoryChannelLayer for RedisChannelLayer at the same time.
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/1"),
+#     }
+# }
