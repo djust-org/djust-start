@@ -141,6 +141,10 @@ DJUST_CONFIG = {
 # Silence upstream contrast warnings from djust-theming's default preset.
 SILENCED_SYSTEM_CHECKS = ["djust_theming.W001"]
 
+DJUST_THEMING = {
+    "default_mode": "dark",
+}
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
