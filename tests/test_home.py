@@ -95,3 +95,9 @@ class TestHomeView:
         ctx = view.get_context_data()
         assert "count" in ctx
         assert ctx["count"] == 1
+
+
+@pytest.mark.django_db
+def test_home_page_returns_200(client):
+    response = client.get("/")
+    assert response.status_code == 200
