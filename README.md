@@ -9,32 +9,18 @@ git clone https://github.com/djust-org/djust-start.git myapp
 cd myapp
 ```
 
-## 2. Configure
-
-```bash
-cp .env.example .env
-```
-
-Generate a secret key and set it in `.env`:
-
-```bash
-python3 -c "import secrets; print(secrets.token_urlsafe(50))"
-```
-
-`DATABASE_URL` and `DJUST_STATE_BACKEND` are blank by default — SQLite and in-memory state work fine for local dev, no changes needed.
-
-## 3. Run
+## 2. Run
 
 ```bash
 make install
 make dev
 ```
 
-`make install` creates `.venv` and installs deps. `make dev` migrates and starts the server on `:8000`.
+`make install` creates `.venv`, installs deps, and generates `.env` with a random `SECRET_KEY`. `make dev` migrates and starts the server on `:8000`.
 
 Visit [http://localhost:8000](http://localhost:8000) — you should see a welcome page with a live counter.
 
-## 4. Next steps
+## 3. Next steps
 
 - Add views in `apps/home/views.py` or create a new app under `apps/`
 - Register new view modules in `config/settings.py` → `LIVEVIEW_ALLOWED_MODULES`

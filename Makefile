@@ -15,6 +15,11 @@ venv:
 install: venv
 	$(VENV)/bin/pip install uv
 	$(VENV)/bin/uv pip install -e ".[dev]"
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		python3 -c "import secrets; key=secrets.token_urlsafe(50); data=open('.env').read(); open('.env','w').write(data.replace('SECRET_KEY=changeme','SECRET_KEY='+key))"; \
+		echo "Created .env with a generated SECRET_KEY"; \
+	fi
 
 dev:
 	$(PY) manage.py migrate --run-syncdb
