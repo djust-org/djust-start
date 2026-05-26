@@ -26,9 +26,11 @@ python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 ## 3. Run
 
 ```bash
-make install   # create .venv and install deps
-make dev       # migrate + start server on :8000
+make install
+make dev
 ```
+
+`make install` creates `.venv` and installs deps. `make dev` migrates and starts the server on `:8000`.
 
 Visit [http://localhost:8000](http://localhost:8000) — you should see a welcome page with a live counter.
 
