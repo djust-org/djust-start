@@ -14,7 +14,11 @@
     <nav class="site-nav">
         <a href="/" class="site-brand">djust starter</a>
         <div class="nav-right">
-            <span class="presence-chip">{{ online_count|default:1 }} online</span>
+            {# .presence-chip is rendered inside the LiveView (home.html) so
+               it can update live. The LiveView's dj-view root is in <main>,
+               so anything outside it (like this nav) won't re-render on
+               presence broadcasts. #}
+            {% block nav_extras %}{% endblock %}
             {% theme_panel %}
         </div>
     </nav>

@@ -7,6 +7,7 @@
 <div dj-view="apps.home.views.HomeView" class="home-page">
 
   <div class="hero-header">
+    <span class="presence-chip">{{ online_count|default:1 }} online</span>
     <img src="https://djust.org/static/images/djust-logo.png" alt="djust" class="hero-logo">
     <h1 class="hero-title">Welcome to djust</h1>
     <p class="hero-tagline">Real-time, multi-user UI in plain Python.</p>
