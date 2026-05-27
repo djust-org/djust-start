@@ -19,20 +19,7 @@
        can't render the emoji+counter layout. -->
   <section class="hero-demo">
     <div class="demo-code">
-      <div class="demo-label">apps/home/views.py</div>
-<pre><code>EMOJIS = ["🔥", "❤️", "🚀", "👏", "💯", "😍"]
-
-class HomeView(BaseLiveView):
-    template_name = "home/home.html"
-
-    @action
-    def react(self, emoji="", **kwargs):
-        row, _ = ReactionCount.objects.get_or_create(emoji=emoji)
-        row.count += 1
-        row.save()
-        self._rebuild_reactions()
-        push_to_view("apps.home.views.HomeView",
-                     state={"reactions": self.reactions})</code></pre>
+      {% code_block language="python" filename="apps/home/views.py" code=react_src %}
     </div>
     <div class="demo-live">
       <div class="demo-label">Live — try it</div>
@@ -63,14 +50,7 @@ class HomeView(BaseLiveView):
       </div>
       <details class="show-code">
         <summary>Show code</summary>
-<pre><code>@action
-def vote(self, option="", **kwargs):
-    row, _ = PollVote.objects.get_or_create(option=option)
-    row.count += 1
-    row.save()
-    self._rebuild_poll()
-    push_to_view("apps.home.views.HomeView",
-                 state={"poll_data": self.poll_data})</code></pre>
+        {% code_block language="python" code=vote_src %}
       </details>
     {% endcard %}
 
@@ -87,15 +67,7 @@ def vote(self, option="", **kwargs):
       </ul>
       <details class="show-code">
         <summary>Show code</summary>
-<pre><code>@action
-def post_message(self, text="", **kwargs):
-    text = (text or "").strip()[:280]
-    if not text:
-        return
-    GuestbookMessage.objects.create(text=text)
-    self._rebuild_messages()
-    push_to_view("apps.home.views.HomeView",
-                 state={"messages": self.messages})</code></pre>
+        {% code_block language="python" code=post_message_src %}
       </details>
     {% endcard %}
 
@@ -109,9 +81,7 @@ def post_message(self, text="", **kwargs):
     <span class="sep">·</span>
     <a href="https://github.com/djust-org/djust-start" target="_blank" rel="noopener">GitHub</a>
     <span class="sep">·</span>
-    <span onclick="if (!confirm('Wipe all reactions, votes, and messages?')) event.stopImmediatePropagation()">
-      {% dj_button label="Reset demo" event="reset_demo" variant="danger" size="sm" %}
-    </span>
+    {% dj_button label="Reset demo" event="reset_demo" variant="danger" size="sm" %}
   </footer>
 
 </div>{# .home-page #}

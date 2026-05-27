@@ -145,7 +145,9 @@ if DJUST_STATE_BACKEND.startswith(("redis://", "rediss://")):
 DJUST_CONFIG = {
     # C003: we use uvicorn, not daphne, for ASGI.
     # T002: dj-root is auto-inferred — informational only.
-    "suppress_checks": ["C003", "T002"],
+    # V008: false-positive return-type inference (djust-org/djust#1609) on
+    #       stdlib calls like inspect.getsource() that DO return primitives.
+    "suppress_checks": ["C003", "T002", "V008"],
 }
 
 # Fine-grained djust behaviour. All values below are the defaults — uncomment

@@ -1,3 +1,5 @@
+import inspect
+
 from djust import action
 from djust.push import push_to_view
 
@@ -20,6 +22,11 @@ class HomeView(BaseLiveView):
         self._rebuild_reactions()
         self._rebuild_poll()
         self._rebuild_messages()
+        # Source code shown in the demo panels — pulled live from this file
+        # so editing the handler updates the displayed code automatically.
+        self.react_src = inspect.getsource(HomeView.react)
+        self.vote_src = inspect.getsource(HomeView.vote)
+        self.post_message_src = inspect.getsource(HomeView.post_message)
 
     # ─── state helpers ────────────────────────────────────────────────────
 
