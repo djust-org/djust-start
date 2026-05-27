@@ -151,9 +151,13 @@ DJUST_CONFIG = {
 # Fine-grained djust behaviour. All values below are the defaults — uncomment
 # and change only what you need. Full reference: docs.djust.org/api/config/
 LIVEVIEW_CONFIG = {
-    # CSS framework used for auto-generated form field classes.
+    # CSS framework djust-components emits classes for. Determines whether
+    # {% dj_button %} / {% card %} / {% dj_input %} render Bootstrap-style
+    # ('.btn .btn-danger', '.card .card-header') or Tailwind-style
+    # ('px-4 py-2 bg-red-500', etc) markup. Component CSS is loaded
+    # automatically by {% theme_head %} — no manual <link> needed.
     # Options: "bootstrap5" | "bootstrap4" | "tailwind" | "plain" | None
-    # "css_framework": "bootstrap5",
+    "css_framework": "bootstrap5",
 
     # Event handler security mode.
     # "strict" — only @event_handler / @action decorated methods can be called (default, recommended).
