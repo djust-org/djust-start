@@ -25,13 +25,20 @@ class BaseLiveView(PresenceMixin, LiveView):
         super().mount(request, **kwargs)
         self._request_path = request.path
         # No-op during HTTP mount (no _websocket_session_id); auto-broadcasts
-        # in WS mount so every open tab's chip refreshes.
+        # in WS mount so every open tab's chip refreshes. rc12 sets
+        # self.online_count via the mixin's _refresh_online_count.
         self.track_presence()
-        # WS mount sets self.online_count via track_presence → _refresh_online_count.
-        # HTTP mount skips track_presence entirely, so ensure the attribute exists
-        # for the prerender (template would otherwise fall back to |default:1).
+        # HTTP mount skips track_presence, so ensure online_count matches what
+        # the upcoming WS mount will produce. djust#1614 is unfixed: when the
+        # HTTP prerender and WS-mount HTML differ at the chip, the client
+        # keeps the prerendered value and the chip never updates. Adding +1
+        # (anticipating this viewer's pending WS join) closes the gap. Safe
+        # now that djust#1612 prevents HTTP-mount orphan entries.
         if not hasattr(self, "online_count"):
-            self.online_count = 1
+            try:
+                self.online_count = len(self.list_presences()) + 1
+            except Exception:
+                self.online_count = 1
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
