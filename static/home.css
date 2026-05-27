@@ -64,6 +64,9 @@ body {
 .sync-banner:hover {
     filter: brightness(0.95);
 }
+.sync-banner--hidden {
+    display: none;
+}
 .sync-arrow {
     margin-right: 0.4rem;
     font-weight: 700;

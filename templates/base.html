@@ -24,15 +24,17 @@
         </div>
     </nav>
 
-    {% if not online_count or online_count == 1 %}
-    {# href set via JS so the link uses the current URL even after WS
-       re-renders (request.path isn't in the Rust renderer's context). #}
-    <a href="/" target="_blank" rel="noopener" class="sync-banner"
+    {# Banner is always rendered, hidden via class when count > 1. Toggling
+       a class is a SetAttribute patch (in-place) — much more reliable than
+       conditional render which fires InsertChild at a structural index
+       the diff sometimes mis-computes (banner ends up at bottom of dj-view).
+       href set via JS so it uses the current URL even after WS re-renders. #}
+    <a href="/" target="_blank" rel="noopener"
+       class="sync-banner{% if online_count and online_count > 1 %} sync-banner--hidden{% endif %}"
        onclick="window.open(location.href); return false;">
         <span class="sync-arrow">↗</span>
         Open this page in another window to see real-time sync.
     </a>
-    {% endif %}
 
     <main>
         {% block content %}{% endblock %}
