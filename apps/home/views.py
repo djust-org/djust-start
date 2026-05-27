@@ -87,3 +87,21 @@ class HomeView(BaseLiveView):
             "apps.home.views.HomeView",
             state={"messages": self.messages},
         )
+
+    @action
+    def reset_demo(self, **kwargs):
+        """Wipe all three demos back to empty. No auth — demo only."""
+        ReactionCount.objects.all().delete()
+        PollVote.objects.all().delete()
+        GuestbookMessage.objects.all().delete()
+        self._rebuild_reactions()
+        self._rebuild_poll()
+        self._rebuild_messages()
+        push_to_view(
+            "apps.home.views.HomeView",
+            state={
+                "reactions": self.reactions,
+                "poll_data": self.poll_data,
+                "messages": self.messages,
+            },
+        )

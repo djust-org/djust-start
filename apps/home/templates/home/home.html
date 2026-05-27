@@ -108,6 +108,11 @@ def post_message(self, text="", **kwargs):
     <a href="https://docs.djust.org/getting-started/" target="_blank" rel="noopener">docs.djust.org</a>
     <span class="sep">·</span>
     <a href="https://github.com/djust-org/djust-start" target="_blank" rel="noopener">GitHub</a>
+    <span class="sep">·</span>
+    <button class="reset-btn" dj-click="reset_demo"
+            onclick="return confirm('Wipe all reactions, votes, and messages?')">
+      Reset demo
+    </button>
   </footer>
 
 </div>

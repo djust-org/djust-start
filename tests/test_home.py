@@ -245,6 +245,28 @@ class TestHomeViewActions:
         assert len(view.messages) == 5
         assert view.messages[0]["text"] == "msg 6"
 
+    # ─── reset_demo ──────────────────────────────────────────────────────
+
+    def test_reset_demo_clears_all_three_models(self):
+        from apps.home.models import GuestbookMessage, PollVote, ReactionCount
+
+        view = self._mount()
+        view.react(emoji="🔥")
+        view.vote(option="Forms")
+        view.post_message(text="hello")
+        assert ReactionCount.objects.exists()
+        assert PollVote.objects.exists()
+        assert GuestbookMessage.objects.exists()
+
+        view.reset_demo()
+
+        assert not ReactionCount.objects.exists()
+        assert not PollVote.objects.exists()
+        assert not GuestbookMessage.objects.exists()
+        assert all(r["count"] == 0 for r in view.reactions)
+        assert all(r["count"] == 0 for r in view.poll_data)
+        assert view.messages == []
+
 
 @pytest.mark.django_db
 def test_base_template_renders_sync_banner(client):
