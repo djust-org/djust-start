@@ -111,3 +111,30 @@ def test_home_page_contains_feature_cards(client):
     assert "@action counter" in content
     assert "Theming" in content
     assert "Components" in content
+
+
+@pytest.mark.django_db
+def test_reactioncount_starts_at_zero_when_created():
+    from apps.home.models import ReactionCount
+
+    row, created = ReactionCount.objects.get_or_create(emoji="🔥")
+    assert created is True
+    assert row.count == 0
+
+
+@pytest.mark.django_db
+def test_pollvote_starts_at_zero_when_created():
+    from apps.home.models import PollVote
+
+    row, created = PollVote.objects.get_or_create(option="Forms")
+    assert created is True
+    assert row.count == 0
+
+
+@pytest.mark.django_db
+def test_guestbookmessage_stores_text_and_timestamps():
+    from apps.home.models import GuestbookMessage
+
+    msg = GuestbookMessage.objects.create(text="hello")
+    assert msg.text == "hello"
+    assert msg.created_at is not None
