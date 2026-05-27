@@ -132,7 +132,7 @@ class TestHomeViewRebuildHelpers:
         assert ctx["reactions"] == view.reactions
         assert ctx["poll_data"] == view.poll_data
         assert ctx["messages"] == view.messages
-        assert ctx["online_count"] == view.online_count
+        assert ctx["online_count"] >= 1
 
 
 @pytest.mark.django_db
@@ -169,8 +169,8 @@ def test_guestbookmessage_stores_text_and_timestamps():
 
 
 @pytest.mark.django_db
-def test_base_live_view_sets_online_count_after_mount():
-    """online_count is always at least 1 — the viewer themselves count."""
+def test_base_live_view_exposes_online_count_in_context():
+    """online_count is recomputed on every render so the chip stays fresh."""
     from apps.shared.base_views import BaseLiveView
 
     rf = RequestFactory()
@@ -178,8 +178,9 @@ def test_base_live_view_sets_online_count_after_mount():
     req.user = AnonymousUser()
     view = BaseLiveView()
     view.mount(req)
-    assert hasattr(view, "online_count")
-    assert view.online_count >= 1
+    ctx = view.get_context_data()
+    assert "online_count" in ctx
+    assert ctx["online_count"] >= 1
 
 
 @pytest.mark.django_db

@@ -11,6 +11,7 @@ POLL_OPTIONS = ["Forms", "Components", "Realtime", "Auth"]
 
 class HomeView(BaseLiveView):
     template_name = "home/home.html"
+    presence_key = "home:landing"  # all sessions of HomeView share this bucket
 
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
