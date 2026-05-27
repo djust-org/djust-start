@@ -62,7 +62,9 @@ def test_theme_cookies_extracts_cookie_values():
 
 
 @pytest.mark.django_db
-class TestHomeView:
+class TestHomeViewRebuildHelpers:
+    """Test the data-shaping helpers directly, without going through @action."""
+
     def _mount(self):
         from apps.home.views import HomeView
 
@@ -73,44 +75,70 @@ class TestHomeView:
         view.mount(req)
         return view
 
-    def test_mount_initializes_count_to_zero(self):
-        view = self._mount()
-        assert view.count == 0
+    def test_mount_initializes_reactions_in_canonical_order(self):
+        from apps.home.views import EMOJIS
 
-    def test_increment_increases_count(self):
         view = self._mount()
-        view.increment()
-        assert view.count == 1
+        assert [r["emoji"] for r in view.reactions] == EMOJIS
+        assert all(r["count"] == 0 for r in view.reactions)
 
-    def test_increment_is_cumulative(self):
-        view = self._mount()
-        view.increment()
-        view.increment()
-        view.increment()
-        assert view.count == 3
+    def test_mount_initializes_poll_in_canonical_order(self):
+        from apps.home.views import POLL_OPTIONS
 
-    def test_context_data_includes_count(self):
         view = self._mount()
-        view.increment()
+        assert [r["option"] for r in view.poll_data] == POLL_OPTIONS
+        assert all(r["count"] == 0 for r in view.poll_data)
+        assert all(r["pct"] == 0 for r in view.poll_data)
+
+    def test_mount_initializes_messages_as_empty_list(self):
+        view = self._mount()
+        assert view.messages == []
+
+    def test_rebuild_reactions_reflects_db_counts(self):
+        from apps.home.models import ReactionCount
+
+        ReactionCount.objects.create(emoji="🔥", count=5)
+        view = self._mount()
+        fire = next(r for r in view.reactions if r["emoji"] == "🔥")
+        assert fire["count"] == 5
+
+    def test_rebuild_poll_computes_percentages(self):
+        from apps.home.models import PollVote
+
+        PollVote.objects.create(option="Forms", count=3)
+        PollVote.objects.create(option="Components", count=1)
+        view = self._mount()
+        forms = next(r for r in view.poll_data if r["option"] == "Forms")
+        components = next(r for r in view.poll_data if r["option"] == "Components")
+        realtime = next(r for r in view.poll_data if r["option"] == "Realtime")
+        assert forms["count"] == 3
+        assert forms["pct"] == 75.0
+        assert components["pct"] == 25.0
+        assert realtime["pct"] == 0
+
+    def test_rebuild_messages_limits_to_five_newest_first(self):
+        from apps.home.models import GuestbookMessage
+
+        for i in range(7):
+            GuestbookMessage.objects.create(text=f"msg {i}")
+        view = self._mount()
+        assert len(view.messages) == 5
+        assert view.messages[0]["text"] == "msg 6"
+        assert view.messages[4]["text"] == "msg 2"
+
+    def test_context_data_exposes_demo_state(self):
+        view = self._mount()
         ctx = view.get_context_data()
-        assert "count" in ctx
-        assert ctx["count"] == 1
+        assert ctx["reactions"] == view.reactions
+        assert ctx["poll_data"] == view.poll_data
+        assert ctx["messages"] == view.messages
+        assert ctx["online_count"] == view.online_count
 
 
 @pytest.mark.django_db
 def test_home_page_returns_200(client):
     response = client.get("/")
     assert response.status_code == 200
-
-
-@pytest.mark.django_db
-def test_home_page_contains_feature_cards(client):
-    response = client.get("/")
-    content = response.content.decode()
-    assert "Welcome to djust" in content
-    assert "@action counter" in content
-    assert "Theming" in content
-    assert "Components" in content
 
 
 @pytest.mark.django_db
