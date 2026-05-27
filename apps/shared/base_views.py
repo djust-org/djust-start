@@ -1,11 +1,8 @@
-import logging
 import random
 
 from djust import LiveView
 from djust.presence import PresenceMixin
 from djust.push import push_to_view
-
-logger = logging.getLogger("djust_start.presence")
 
 
 class BaseLiveView(PresenceMixin, LiveView):
@@ -33,51 +30,44 @@ class BaseLiveView(PresenceMixin, LiveView):
             return str(request.user.id)
         return self._anon_user_id
 
+    def _broadcast_presence_change(self):
+        """Re-render every open session of this view so chips update.
+
+        Called after both join (mount) and leave (untrack). Without this,
+        the "N online" chip on other tabs only updates when that tab
+        re-renders for some other reason (click, message, etc.).
+        """
+        try:
+            push_to_view(
+                f"{self.__class__.__module__}.{self.__class__.__name__}",
+                state={"_presence_tick": self._anon_user_id},
+            )
+        except Exception:
+            pass
+
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
         self._request_path = request.path
         self._anon_user_id = f"anon_{random.randint(10_000_000, 99_999_999)}"
-        is_ws = hasattr(self, "_websocket_session_id")
 
-        logger.warning(
-            "[presence] MOUNT view=%s user=%s is_ws=%s",
-            self.__class__.__name__, self._anon_user_id, is_ws,
-        )
-
-        # Only track presence in the WebSocket mount — HTTP mount creates
-        # a throwaway view instance just for initial render.
-        if is_ws:
+        # Only track presence in the WebSocket mount — the HTTP mount creates
+        # a throwaway view instance just for the initial render. Tracking
+        # there would leave an orphan entry every page load.
+        if hasattr(self, "_websocket_session_id"):
             try:
                 self.track_presence()
-                count = len(self.list_presences())
-                logger.warning(
-                    "[presence] TRACKED user=%s count_now=%d",
-                    self._anon_user_id, count,
-                )
-                push_to_view(
-                    f"{self.__class__.__module__}.{self.__class__.__name__}",
-                    state={"_presence_tick": self._anon_user_id},
-                )
-            except Exception as e:
-                logger.exception("[presence] TRACK FAILED: %s", e)
+            except Exception:
+                pass
+            self._broadcast_presence_change()
 
     def untrack_presence(self):
-        """Override to log the disconnect path."""
-        logger.warning(
-            "[presence] UNTRACK called user=%s tracked=%s",
-            getattr(self, "_presence_user_id", None),
-            getattr(self, "_presence_tracked", None),
-        )
         super().untrack_presence()
-        try:
-            count = len(self.list_presences())
-            logger.warning("[presence] UNTRACK done count_now=%d", count)
-        except Exception:
-            pass
+        self._broadcast_presence_change()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["request_path"] = self._request_path
+        # Recompute every render so the chip updates when others join / leave.
         try:
             ctx["online_count"] = len(self.list_presences()) or 1
         except Exception:
