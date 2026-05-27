@@ -349,7 +349,7 @@ body {
     text-underline-offset: 3px;
 }
 .home-footer .reset-btn:hover {
-    color: hsl(var(--destructive, var(--foreground)));
+    color: hsl(var(--destructive));
 }
 
 /* ─── Mobile ─────────────────────────────────────────────────────────── */
