@@ -143,11 +143,9 @@ if DJUST_STATE_BACKEND.startswith(("redis://", "rediss://")):
     DJUST_REDIS_URL = DJUST_STATE_BACKEND
 
 DJUST_CONFIG = {
-    # V001/V005 fire on BaseLiveView because it has no template_name and is
-    # intentionally abstract — not meant to be mounted directly.
-    # V001/V005: BaseLiveView is intentionally abstract — no template_name, not mounted directly.
     # C003: we use uvicorn, not daphne, for ASGI.
-    "suppress_checks": ["V001", "V005", "C003", "T002"],
+    # T002: dj-root is auto-inferred — informational only.
+    "suppress_checks": ["C003", "T002"],
 }
 
 # Fine-grained djust behaviour. All values below are the defaults — uncomment
@@ -189,10 +187,7 @@ LIVEVIEW_CONFIG = {
 
 # djust_theming.W001 — contrast ratio warnings on the built-in default preset.
 # These are upstream issues in the theme pack, not fixable in user code.
-# djust_theming.W001 — contrast ratio warnings on the built-in default preset.
-# djust.V001/V005   — BaseLiveView is abstract; suppress_checks in DJUST_CONFIG
-#                     doesn't silence these (upstream bug), so use Django's own list.
-SILENCED_SYSTEM_CHECKS = ["djust_theming.W001", "djust.V001", "djust.V005"]
+SILENCED_SYSTEM_CHECKS = ["djust_theming.W001"]
 
 # djust-theming options.
 # default_mode: "dark" | "light" | "system"
