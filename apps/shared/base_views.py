@@ -1,3 +1,5 @@
+import random
+
 from djust import LiveView
 from djust.presence import PresenceMixin
 from djust.push import push_to_view
@@ -15,36 +17,39 @@ class BaseLiveView(PresenceMixin, LiveView):
 
     login_required = False
 
-    def get_presence_user_id(self) -> str:
-        """Authenticated users count as one identity across all their tabs.
+    def get_presence_user_id(self):
+        """Authenticated users count as one identity across their tabs.
 
-        For anonymous viewers, two tabs share a Django session and would
-        otherwise overwrite each other in the presence dict (count stays at 1).
-        Appending `id(self)` makes each WebSocket connection a distinct
-        presence entry — which is what the "N online" chip should reflect.
+        Anonymous viewers get a stable per-instance id so two tabs in the
+        same browser session register as two distinct presences (instead
+        of overwriting each other under the shared session key).
         """
         request = getattr(self, "request", None)
         if request is not None and getattr(request, "user", None) \
                 and request.user.is_authenticated:
             return str(request.user.id)
-        return f"anon:{id(self)}"
+        return self._anon_user_id
 
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
         self._request_path = request.path
-        # PresenceMixin needs WebSocket channel context. In unit-test mount
-        # (RequestFactory) track_presence raises silently — that's fine,
-        # get_context_data falls back to 1 below.
-        try:
-            self.track_presence()
-            # Re-render every other open session of this view so their
-            # "N online" chip picks up the new presence count.
-            push_to_view(
-                f"{self.__class__.__module__}.{self.__class__.__name__}",
-                state={"_presence_tick": id(self)},
-            )
-        except Exception:
-            pass
+        # Stable per-instance id used by get_presence_user_id() for anon viewers.
+        self._anon_user_id = f"anon_{random.randint(10_000_000, 99_999_999)}"
+
+        # Only track presence in the WebSocket mount. The HTTP mount creates
+        # a throwaway view instance just for the initial render — tracking
+        # there would leave an orphan entry every page load.
+        if hasattr(self, "_websocket_session_id"):
+            try:
+                self.track_presence()
+                # Re-render every other open session so their chip picks up
+                # the new count without waiting for a click.
+                push_to_view(
+                    f"{self.__class__.__module__}.{self.__class__.__name__}",
+                    state={"_presence_tick": self._anon_user_id},
+                )
+            except Exception:
+                pass
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
