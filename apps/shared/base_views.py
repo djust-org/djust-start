@@ -20,10 +20,21 @@ class BaseLiveView(PresenceMixin, LiveView):
     """
 
     login_required = False
-    # Anonymous tabs in the same browser share a Django session_key and would
-    # otherwise overwrite each other in the presence dict. Opt in to the
-    # per-connection user_id so the chip reflects real tab count.
     presence_unique_per_connection = True
+
+    def get_presence_user_id(self):
+        # DIAG: trace which branch wins
+        req = getattr(self, "request", None)
+        has_request = req is not None
+        is_auth = bool(req and getattr(req.user, "is_authenticated", False)) if has_request else None
+        flag = getattr(self, "presence_unique_per_connection", False)
+        ws_sid = getattr(self, "_websocket_session_id", None)
+        result = super().get_presence_user_id()
+        logger.warning(
+            "[presence-diag] get_user_id has_req=%s is_auth=%s flag=%r ws_sid=%s → %s",
+            has_request, is_auth, flag, ws_sid, result,
+        )
+        return result
 
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
