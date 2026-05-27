@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load live_tags %}
+{% load live_tags djust_components %}
 
 {% block title %}djust starter{% endblock %}
 
@@ -14,6 +14,8 @@
   </div>
 
   <!-- HERO: Live Reactions ─── code panel ┃ live result ────────────── -->
+  <!-- Reaction buttons stay as raw <button> — dj_button is text-only and
+       can't render the emoji+counter layout. -->
   <section class="hero-demo">
     <div class="demo-code">
       <div class="demo-label">apps/home/views.py</div>
@@ -47,9 +49,8 @@ class HomeView(BaseLiveView):
   <!-- SUPPORTING: Live poll · Live guestbook (2-col grid) ───────────── -->
   <div class="supporting-grid">
 
-    <section class="supporting-card">
-      <h2 class="card-title">Live poll</h2>
-      <p class="card-subtitle">Which djust feature next?</p>
+    {% card title="Live poll" subtitle="Which djust feature next?" class="supporting-card" %}
+      <!-- Poll rows stay raw — custom label+bar+count layout doesn't fit dj_button -->
       <div class="poll">
         {% for row in poll_data %}
           <button class="poll-row" dj-click="vote" data-option="{{ row.option }}">
@@ -70,11 +71,9 @@ def vote(self, option="", **kwargs):
     push_to_view("apps.home.views.HomeView",
                  state={"poll_data": self.poll_data})</code></pre>
       </details>
-    </section>
+    {% endcard %}
 
-    <section class="supporting-card">
-      <h2 class="card-title">Live guestbook</h2>
-      <p class="card-subtitle">Hit Enter to post. Others see it instantly.</p>
+    {% card title="Live guestbook" subtitle="Hit Enter to post. Others see it instantly." class="supporting-card" %}
       <form dj-submit="post_message" class="guestbook-form">
         <input name="text" placeholder="Say hi 👋" maxlength="280" autocomplete="off" aria-label="Guestbook message">
       </form>
@@ -97,7 +96,7 @@ def post_message(self, text="", **kwargs):
     push_to_view("apps.home.views.HomeView",
                  state={"messages": self.messages})</code></pre>
       </details>
-    </section>
+    {% endcard %}
 
   </div>
 
@@ -109,10 +108,9 @@ def post_message(self, text="", **kwargs):
     <span class="sep">·</span>
     <a href="https://github.com/djust-org/djust-start" target="_blank" rel="noopener">GitHub</a>
     <span class="sep">·</span>
-    <button class="reset-btn" dj-click="reset_demo"
-            onclick="return confirm('Wipe all reactions, votes, and messages?')">
-      Reset demo
-    </button>
+    <span onclick="if (!confirm('Wipe all reactions, votes, and messages?')) event.stopImmediatePropagation()">
+      {% dj_button label="Reset demo" event="reset_demo" variant="danger" size="sm" %}
+    </span>
   </footer>
 
 </div>

@@ -181,22 +181,9 @@ body {
     gap: 1.5rem;
     margin-bottom: 2.5rem;
 }
-.supporting-card {
-    border: 1px solid hsl(var(--border));
-    border-radius: 12px;
-    padding: 1.25rem;
-    background: hsl(var(--card));
-}
-.card-title {
-    font-size: 1.05rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem;
-}
-.card-subtitle {
-    font-size: 0.85rem;
-    color: hsl(var(--muted-foreground));
-    margin: 0 0 1rem;
-}
+/* .supporting-card is a class we hand to {% card %} via class= so the dj-card
+   wrapper participates in the grid layout. djust-components owns the visual
+   styling (.card, .card-header, .card-title, .card-body) — bootstrap-style. */
 
 /* ─── Poll ───────────────────────────────────────────────────────────── */
 .poll {
@@ -337,20 +324,8 @@ body {
     border-radius: 3px;
     font-size: 0.82rem;
 }
-.home-footer .reset-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    color: hsl(var(--muted-foreground));
-    font: inherit;
-    cursor: pointer;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 3px;
-}
-.home-footer .reset-btn:hover {
-    color: hsl(var(--destructive));
-}
+/* Reset button styling now comes from {% dj_button variant="danger" size="sm" %}
+   in djust-components — produces .btn.btn-danger.btn-sm and respects theme. */
 
 /* ─── Mobile ─────────────────────────────────────────────────────────── */
 @media (max-width: 720px) {
