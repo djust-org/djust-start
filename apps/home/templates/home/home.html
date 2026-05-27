@@ -34,7 +34,7 @@ class HomeView(BaseLiveView):
       <div class="demo-label">Live — try it</div>
       <div class="reactions">
         {% for row in reactions %}
-          <button class="reaction-btn" dj-click="react" dj-param-emoji="{{ row.emoji }}">
+          <button class="reaction-btn" dj-click="react" data-emoji="{{ row.emoji }}">
             <span class="emoji">{{ row.emoji }}</span>
             <span class="count">{{ row.count }}</span>
           </button>
@@ -51,7 +51,7 @@ class HomeView(BaseLiveView):
       <p class="card-subtitle">Which djust feature next?</p>
       <div class="poll">
         {% for row in poll_data %}
-          <button class="poll-row" dj-click="vote" dj-param-option="{{ row.option }}">
+          <button class="poll-row" dj-click="vote" data-option="{{ row.option }}">
             <span class="poll-label">{{ row.option }}</span>
             <span class="poll-bar"><span class="poll-fill" style="width: {{ row.pct }}%"></span></span>
             <span class="poll-count">{{ row.count }}</span>
