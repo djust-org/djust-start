@@ -324,8 +324,15 @@ body {
     border-radius: 3px;
     font-size: 0.82rem;
 }
-/* Reset button styling now comes from {% dj_button variant="danger" size="sm" %}
-   in djust-components — produces .btn.btn-danger.btn-sm and respects theme. */
+/* Local shim: dj_button advertises variants {danger, success, warning}
+   but djust-theming components.css only ships {destructive, ghost, link, primary,
+   secondary}. Map the unstyled variant names to the matching destructive
+   token until djust-org/djust resolves the naming gap. */
+.btn-danger {
+    background-color: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+}
+.btn-danger:hover { opacity: 0.9; }
 
 /* ─── Mobile ─────────────────────────────────────────────────────────── */
 @media (max-width: 720px) {
