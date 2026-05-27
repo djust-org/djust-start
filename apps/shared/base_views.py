@@ -74,8 +74,15 @@ class BaseLiveView(PresenceMixin, LiveView):
             self._refresh_online_count()
             self._broadcast_presence_change()
         else:
-            # HTTP-only render — show at least 1 (self).
-            self.online_count = 1
+            # HTTP mount runs BEFORE the WebSocket connects, so we're not
+            # in the backend yet. Anticipate ourselves with +1 so the
+            # HTTP-rendered chip matches what the WS mount will show after
+            # track_presence(). If they diverge, djust's has_prerendered
+            # optimization keeps the chip stuck at the HTTP value.
+            try:
+                self.online_count = len(self.list_presences()) + 1
+            except Exception:
+                self.online_count = 1
 
     def untrack_presence(self):
         super().untrack_presence()
