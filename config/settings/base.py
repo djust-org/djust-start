@@ -147,7 +147,7 @@ DJUST_CONFIG = {
     # intentionally abstract — not meant to be mounted directly.
     # V001/V005: BaseLiveView is intentionally abstract — no template_name, not mounted directly.
     # C003: we use uvicorn, not daphne, for ASGI.
-    "suppress_checks": ["V001", "V005", "C003"],
+    "suppress_checks": ["V001", "V005", "C003", "T002"],
 }
 
 # Fine-grained djust behaviour. All values below are the defaults — uncomment

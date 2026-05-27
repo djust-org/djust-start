@@ -1,92 +1,37 @@
-import random
-
 from djust import LiveView
-from djust.decorators import event_handler
 from djust.presence import PresenceMixin
-from djust.push import push_to_view
 
 
 class BaseLiveView(PresenceMixin, LiveView):
-    """Project-wide LiveView base. Adds presence tracking + request path context.
+    """Project-wide LiveView base.
 
-    Subclasses should set `presence_key` to share a presence bucket across
-    sessions of the same view (otherwise the chip stays at "1 online").
+    With djust ≥ 1.0.0rc12 (PR #1615), PresenceMixin handles the heavy lifting:
+      - track_presence() is auto-skipped during HTTP mount (no orphan entries)
+      - track/untrack auto-broadcast to all sessions via _on_presence_change
+      - self.online_count is auto-refreshed and exposed to templates
+      - presence_unique_per_connection=True makes anonymous tabs count separately
 
     NOTE: when djust-org/djust#1605 lands, replace the SILENCED_SYSTEM_CHECKS
     entries for djust.V001 and djust.V005 with `abstract = True` on this class.
     """
 
     login_required = False
-
-    def get_presence_user_id(self):
-        """Authenticated users count as one identity across their tabs.
-
-        Anonymous viewers get a stable per-instance id so two tabs in the
-        same browser session register as two distinct presences (instead
-        of overwriting each other under the shared session key).
-        """
-        request = getattr(self, "request", None)
-        if request is not None and getattr(request, "user", None) \
-                and request.user.is_authenticated:
-            return str(request.user.id)
-        return self._anon_user_id
-
-    def _refresh_online_count(self):
-        """Recompute online_count from the presence backend.
-
-        Stored on the instance (not just in get_context_data context) so
-        djust's render diff picks up the change and patches the chip in
-        the DOM. Putting it only in context kept the template render fresh
-        but the diff layer never saw a 'changed field' and emitted no patches.
-        """
-        try:
-            self.online_count = len(self.list_presences()) or 1
-        except Exception:
-            self.online_count = 1
-
-    @event_handler
-    def _on_presence_change(self, **kwargs):
-        """Re-sync the count when another session joined or left."""
-        self._refresh_online_count()
-
-    def _broadcast_presence_change(self):
-        try:
-            push_to_view(
-                f"{self.__class__.__module__}.{self.__class__.__name__}",
-                handler="_on_presence_change",
-                payload={},
-            )
-        except Exception:
-            pass
+    # Anonymous tabs in the same browser share a Django session_key and would
+    # otherwise overwrite each other in the presence dict. Opt in to the
+    # per-connection user_id so the chip reflects real tab count.
+    presence_unique_per_connection = True
 
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
         self._request_path = request.path
-        self._anon_user_id = f"anon_{random.randint(10_000_000, 99_999_999)}"
-
-        # Only track presence in the WebSocket mount — HTTP mount creates
-        # a throwaway view instance just for initial render.
-        if hasattr(self, "_websocket_session_id"):
-            try:
-                self.track_presence()
-            except Exception:
-                pass
-            self._refresh_online_count()
-            self._broadcast_presence_change()
-        else:
-            # HTTP mount runs before WS connects, so list_presences excludes
-            # this viewer. Don't anticipate with +1 — stale entries from
-            # prior reloads inflate the count. WS mount will refresh shortly
-            # and the diff will patch the chip to the real number.
-            try:
-                self.online_count = max(1, len(self.list_presences()))
-            except Exception:
-                self.online_count = 1
-
-    def untrack_presence(self):
-        super().untrack_presence()
-        self._refresh_online_count()
-        self._broadcast_presence_change()
+        # No-op during HTTP mount (no _websocket_session_id); auto-broadcasts
+        # in WS mount so every open tab's chip refreshes.
+        self.track_presence()
+        # WS mount sets self.online_count via track_presence → _refresh_online_count.
+        # HTTP mount skips track_presence entirely, so ensure the attribute exists
+        # for the prerender (template would otherwise fall back to |default:1).
+        if not hasattr(self, "online_count"):
+            self.online_count = 1
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
