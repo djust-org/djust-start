@@ -46,3 +46,43 @@ class HomeView(BaseLiveView):
             {"text": r["text"], "created_at": r["created_at"].isoformat()}
             for r in rows
         ]
+
+    # ─── @action handlers ────────────────────────────────────────────────
+
+    @action
+    def react(self, emoji="", **kwargs):
+        if emoji not in EMOJIS:
+            return
+        row, _ = ReactionCount.objects.get_or_create(emoji=emoji)
+        row.count += 1
+        row.save()
+        self._rebuild_reactions()
+        push_to_view(
+            "apps.home.views.HomeView",
+            state={"reactions": self.reactions},
+        )
+
+    @action
+    def vote(self, option="", **kwargs):
+        if option not in POLL_OPTIONS:
+            return
+        row, _ = PollVote.objects.get_or_create(option=option)
+        row.count += 1
+        row.save()
+        self._rebuild_poll()
+        push_to_view(
+            "apps.home.views.HomeView",
+            state={"poll_data": self.poll_data},
+        )
+
+    @action
+    def post_message(self, text="", **kwargs):
+        text = (text or "").strip()[:280]
+        if not text:
+            return
+        GuestbookMessage.objects.create(text=text)
+        self._rebuild_messages()
+        push_to_view(
+            "apps.home.views.HomeView",
+            state={"messages": self.messages},
+        )

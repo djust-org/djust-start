@@ -180,3 +180,107 @@ def test_base_live_view_sets_online_count_after_mount():
     view.mount(req)
     assert hasattr(view, "online_count")
     assert view.online_count >= 1
+
+
+@pytest.mark.django_db
+class TestHomeViewActions:
+    def _mount(self):
+        from apps.home.views import HomeView
+
+        rf = RequestFactory()
+        req = rf.get("/")
+        req.user = AnonymousUser()
+        view = HomeView()
+        view.mount(req)
+        return view
+
+    # ─── react ────────────────────────────────────────────────────────────
+
+    def test_react_increments_db_count_and_state(self):
+        from apps.home.models import ReactionCount
+
+        view = self._mount()
+        view.react(emoji="🔥")
+        assert ReactionCount.objects.get(emoji="🔥").count == 1
+        fire = next(r for r in view.reactions if r["emoji"] == "🔥")
+        assert fire["count"] == 1
+
+    def test_react_is_cumulative(self):
+        view = self._mount()
+        view.react(emoji="❤️")
+        view.react(emoji="❤️")
+        view.react(emoji="❤️")
+        heart = next(r for r in view.reactions if r["emoji"] == "❤️")
+        assert heart["count"] == 3
+
+    def test_react_ignores_invalid_emoji(self):
+        from apps.home.models import ReactionCount
+
+        view = self._mount()
+        view.react(emoji="💣")  # not in EMOJIS
+        assert ReactionCount.objects.filter(emoji="💣").count() == 0
+
+    # ─── vote ─────────────────────────────────────────────────────────────
+
+    def test_vote_increments_db_count_and_state(self):
+        from apps.home.models import PollVote
+
+        view = self._mount()
+        view.vote(option="Forms")
+        assert PollVote.objects.get(option="Forms").count == 1
+        forms = next(r for r in view.poll_data if r["option"] == "Forms")
+        assert forms["count"] == 1
+        assert forms["pct"] == 100.0
+
+    def test_vote_ignores_invalid_option(self):
+        from apps.home.models import PollVote
+
+        view = self._mount()
+        view.vote(option="Nonsense")
+        assert PollVote.objects.filter(option="Nonsense").count() == 0
+
+    def test_vote_recomputes_pct_across_options(self):
+        view = self._mount()
+        view.vote(option="Forms")
+        view.vote(option="Forms")
+        view.vote(option="Forms")
+        view.vote(option="Auth")
+        forms = next(r for r in view.poll_data if r["option"] == "Forms")
+        auth = next(r for r in view.poll_data if r["option"] == "Auth")
+        assert forms["pct"] == 75.0
+        assert auth["pct"] == 25.0
+
+    # ─── post_message ────────────────────────────────────────────────────
+
+    def test_post_message_saves_and_appears_in_state(self):
+        from apps.home.models import GuestbookMessage
+
+        view = self._mount()
+        view.post_message(text="hello world")
+        assert GuestbookMessage.objects.filter(text="hello world").exists()
+        assert view.messages[0]["text"] == "hello world"
+
+    def test_post_message_ignores_empty_text(self):
+        from apps.home.models import GuestbookMessage
+
+        view = self._mount()
+        view.post_message(text="")
+        view.post_message(text="   ")
+        view.post_message(text=None)
+        assert GuestbookMessage.objects.count() == 0
+        assert view.messages == []
+
+    def test_post_message_trims_to_280_chars(self):
+        from apps.home.models import GuestbookMessage
+
+        view = self._mount()
+        view.post_message(text="x" * 500)
+        saved = GuestbookMessage.objects.get()
+        assert len(saved.text) == 280
+
+    def test_post_message_keeps_only_five_newest_in_state(self):
+        view = self._mount()
+        for i in range(7):
+            view.post_message(text=f"msg {i}")
+        assert len(view.messages) == 5
+        assert view.messages[0]["text"] == "msg 6"
