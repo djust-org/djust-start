@@ -1,6 +1,7 @@
 import random
 
 from djust import LiveView
+from djust.decorators import event_handler
 from djust.presence import PresenceMixin
 from djust.push import push_to_view
 
@@ -30,17 +31,22 @@ class BaseLiveView(PresenceMixin, LiveView):
             return str(request.user.id)
         return self._anon_user_id
 
-    def _broadcast_presence_change(self):
-        """Re-render every open session of this view so chips update.
+    @event_handler
+    def _on_presence_change(self, **kwargs):
+        """Receive a broadcast that someone joined or left.
 
-        Called after both join (mount) and leave (untrack). Without this,
-        the "N online" chip on other tabs only updates when that tab
-        re-renders for some other reason (click, message, etc.).
+        The empty body is intentional — the act of handling this event
+        triggers a re-render, and get_context_data recomputes online_count
+        from list_presences(). No state mutation needed here.
         """
+
+    def _broadcast_presence_change(self):
+        """Tell every open session to re-render so chips reflect the new count."""
         try:
             push_to_view(
                 f"{self.__class__.__module__}.{self.__class__.__name__}",
-                state={"_presence_tick": self._anon_user_id},
+                handler="_on_presence_change",
+                payload={},
             )
         except Exception:
             pass
@@ -50,9 +56,8 @@ class BaseLiveView(PresenceMixin, LiveView):
         self._request_path = request.path
         self._anon_user_id = f"anon_{random.randint(10_000_000, 99_999_999)}"
 
-        # Only track presence in the WebSocket mount — the HTTP mount creates
-        # a throwaway view instance just for the initial render. Tracking
-        # there would leave an orphan entry every page load.
+        # Only track presence in the WebSocket mount — HTTP mount creates
+        # a throwaway view instance just for initial render.
         if hasattr(self, "_websocket_session_id"):
             try:
                 self.track_presence()
@@ -67,7 +72,6 @@ class BaseLiveView(PresenceMixin, LiveView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["request_path"] = self._request_path
-        # Recompute every render so the chip updates when others join / leave.
         try:
             ctx["online_count"] = len(self.list_presences()) or 1
         except Exception:
