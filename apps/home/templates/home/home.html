@@ -1,66 +1,113 @@
 {% extends "base.html" %}
 {% load live_tags %}
-{% load djust_components %}
 
-{% block title %}My App{% endblock %}
+{% block title %}djust starter{% endblock %}
 
 {% block content %}
-<div dj-view="apps.home.views.HomeView" style="max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem;">
+<div dj-view="apps.home.views.HomeView" class="home-page">
 
-  <div style="text-align: center; margin-bottom: 3rem;">
-    <img src="https://djust.org/static/images/djust-logo.png" alt="djust" style="height: 64px; width: auto; margin-bottom: 1.5rem;">
-    <h1 style="font-size: 2.25rem; font-weight: 700; margin-bottom: 0.75rem;">Welcome to djust</h1>
-    <p style="color: hsl(var(--muted-foreground)); max-width: 480px; margin: 0 auto;">
-      Your app starts here. Edit <code>apps/home/views.py</code> to begin.
-    </p>
+  <div class="hero-header">
+    <img src="https://djust.org/static/images/djust-logo.png" alt="djust" class="hero-logo">
+    <h1 class="hero-title">Welcome to djust</h1>
+    <p class="hero-tagline">Real-time, multi-user UI in plain Python.</p>
   </div>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+  <!-- HERO: Live Reactions ─── code panel ┃ live result ────────────── -->
+  <section class="hero-demo">
+    <div class="demo-code">
+      <div class="demo-label">apps/home/views.py</div>
+<pre><code>EMOJIS = ["🔥", "❤️", "🚀", "👏", "💯", "😍"]
 
-    <div class="card">
-      <div class="card-header">
-        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground));">@action counter</span>
-      </div>
-      <div class="card-body" style="text-align: center;">
-        <div style="font-size: 3.5rem; font-weight: 700; line-height: 1; margin-bottom: 1.5rem;">{{ count }}</div>
-        {% dj_button label="Increment" event="increment" variant="primary" %}
+class HomeView(BaseLiveView):
+    template_name = "home/home.html"
+
+    @action
+    def react(self, emoji="", **kwargs):
+        row, _ = ReactionCount.objects.get_or_create(emoji=emoji)
+        row.count += 1
+        row.save()
+        self._rebuild_reactions()
+        push_to_view("apps.home.views.HomeView",
+                     state={"reactions": self.reactions})</code></pre>
+    </div>
+    <div class="demo-live">
+      <div class="demo-label">Live — try it</div>
+      <div class="reactions">
+        {% for row in reactions %}
+          <button class="reaction-btn" dj-click="react" dj-param-emoji="{{ row.emoji }}">
+            <span class="emoji">{{ row.emoji }}</span>
+            <span class="count">{{ row.count }}</span>
+          </button>
+        {% endfor %}
       </div>
     </div>
+  </section>
 
-    <div class="card">
-      <div class="card-header">
-        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground));">Theming</span>
-      </div>
-      <div class="card-body">
-        <p style="color: hsl(var(--muted-foreground)); font-size: 0.9rem; margin: 0;">
-          60+ theme packs, dark mode built-in. Use the ⚙ panel in the nav to explore.
-        </p>
-      </div>
-    </div>
+  <!-- SUPPORTING: Live poll · Live guestbook (2-col grid) ───────────── -->
+  <div class="supporting-grid">
 
-    <div class="card">
-      <div class="card-header">
-        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground));">Components</span>
+    <section class="supporting-card">
+      <h2 class="card-title">Live poll</h2>
+      <p class="card-subtitle">Which djust feature next?</p>
+      <div class="poll">
+        {% for row in poll_data %}
+          <button class="poll-row" dj-click="vote" dj-param-option="{{ row.option }}">
+            <span class="poll-label">{{ row.option }}</span>
+            <span class="poll-bar"><span class="poll-fill" style="width: {{ row.pct }}%"></span></span>
+            <span class="poll-count">{{ row.count }}</span>
+          </button>
+        {% endfor %}
       </div>
-      <div class="card-body">
-        <p style="color: hsl(var(--muted-foreground)); font-size: 0.9rem; margin: 0 0 0.75rem;">
-          Buttons, cards, modals and more.
-        </p>
-        <a href="https://docs.djust.org/components/" target="_blank" rel="noopener"
-           style="font-size: 0.875rem; color: hsl(var(--primary)); text-decoration: none;">
-          docs.djust.org/components/ &rarr;
-        </a>
-      </div>
-    </div>
+      <details class="show-code">
+        <summary>Show code</summary>
+<pre><code>@action
+def vote(self, option="", **kwargs):
+    row, _ = PollVote.objects.get_or_create(option=option)
+    row.count += 1
+    row.save()
+    self._rebuild_poll()
+    push_to_view("apps.home.views.HomeView",
+                 state={"poll_data": self.poll_data})</code></pre>
+      </details>
+    </section>
+
+    <section class="supporting-card">
+      <h2 class="card-title">Live guestbook</h2>
+      <p class="card-subtitle">Hit Enter to post. Others see it instantly.</p>
+      <form dj-submit="post_message" class="guestbook-form">
+        <input name="text" placeholder="Say hi 👋" maxlength="280" autocomplete="off" aria-label="Guestbook message">
+      </form>
+      <ul class="guestbook-list">
+        {% for msg in messages %}
+          <li>{{ msg.text }}</li>
+        {% empty %}
+          <li class="empty">No messages yet — be the first.</li>
+        {% endfor %}
+      </ul>
+      <details class="show-code">
+        <summary>Show code</summary>
+<pre><code>@action
+def post_message(self, text="", **kwargs):
+    text = (text or "").strip()[:280]
+    if not text:
+        return
+    GuestbookMessage.objects.create(text=text)
+    self._rebuild_messages()
+    push_to_view("apps.home.views.HomeView",
+                 state={"messages": self.messages})</code></pre>
+      </details>
+    </section>
 
   </div>
 
-  <div style="text-align: center;">
-    <a href="https://docs.djust.org/getting-started/" target="_blank" rel="noopener"
-       style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-decoration: none;">
-      Read the getting-started guide &rarr;
-    </a>
-  </div>
+  <!-- Footer ─────────────────────────────────────────────────────────── -->
+  <footer class="home-footer">
+    Edit <code>apps/home/views.py</code> to make it yours
+    <span class="sep">·</span>
+    <a href="https://docs.djust.org/getting-started/" target="_blank" rel="noopener">docs.djust.org</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/djust-org/djust-start" target="_blank" rel="noopener">GitHub</a>
+  </footer>
 
 </div>
 {% endblock %}

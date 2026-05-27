@@ -299,3 +299,37 @@ def test_base_template_renders_presence_chip(client):
     content = response.content.decode()
     assert "online" in content
     assert 'class="presence-chip"' in content
+
+
+@pytest.mark.django_db
+def test_home_page_renders_hero_reactions(client):
+    response = client.get("/")
+    content = response.content.decode()
+    # Every emoji button is rendered
+    for emoji in ["🔥", "❤️", "🚀", "👏", "💯", "😍"]:
+        assert emoji in content
+    assert 'class="reactions"' in content
+
+
+@pytest.mark.django_db
+def test_home_page_renders_poll(client):
+    response = client.get("/")
+    content = response.content.decode()
+    for option in ["Forms", "Components", "Realtime", "Auth"]:
+        assert option in content
+    assert "Live poll" in content
+
+
+@pytest.mark.django_db
+def test_home_page_renders_guestbook(client):
+    response = client.get("/")
+    content = response.content.decode()
+    assert "Live guestbook" in content
+    assert "Say hi" in content
+
+
+@pytest.mark.django_db
+def test_home_page_includes_dj_view_binding(client):
+    response = client.get("/")
+    content = response.content.decode()
+    assert 'dj-view="apps.home.views.HomeView"' in content
