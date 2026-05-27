@@ -25,7 +25,10 @@
     </nav>
 
     {% if not online_count or online_count == 1 %}
-    <a href="{{ request.path }}" target="_blank" rel="noopener" class="sync-banner">
+    {# href set via JS so the link uses the current URL even after WS
+       re-renders (request.path isn't in the Rust renderer's context). #}
+    <a href="/" target="_blank" rel="noopener" class="sync-banner"
+       onclick="window.open(location.href); return false;">
         <span class="sync-arrow">↗</span>
         Open this page in another window to see real-time sync.
     </a>
