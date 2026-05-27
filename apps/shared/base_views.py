@@ -1,9 +1,5 @@
-import logging
-
 from djust import LiveView
 from djust.presence import PresenceMixin
-
-logger = logging.getLogger("djust_start.presence")
 
 
 class BaseLiveView(PresenceMixin, LiveView):
@@ -23,29 +19,6 @@ class BaseLiveView(PresenceMixin, LiveView):
 
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
-        ws_sid = getattr(self, "_websocket_session_id", "ABSENT")
+        # No-op in HTTP mount; in WS mount: registers, sets self.online_count,
+        # and broadcasts to peer sessions.
         self.track_presence()
-        uid = getattr(self, "_presence_user_id", None)
-        tracked = getattr(self, "_presence_tracked", None)
-        try:
-            ids = [p.get("id") for p in self.list_presences()]
-        except Exception as e:
-            ids = f"ERR: {e}"
-        logger.warning(
-            "[diag] MOUNT ws_sid=%s uid=%s tracked=%s online_count=%s all_ids=%s",
-            ws_sid, uid, tracked,
-            getattr(self, "online_count", "<unset>"), ids,
-        )
-
-    def untrack_presence(self):
-        uid = getattr(self, "_presence_user_id", None)
-        logger.warning("[diag] UNTRACK uid=%s", uid)
-        super().untrack_presence()
-        try:
-            ids = [p.get("id") for p in self.list_presences()]
-        except Exception:
-            ids = []
-        logger.warning(
-            "[diag] UNTRACK done online_count=%s all_ids=%s",
-            getattr(self, "online_count", "<unset>"), ids,
-        )
