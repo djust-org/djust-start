@@ -1,5 +1,9 @@
+import logging
+
 from djust import LiveView
 from djust.presence import PresenceMixin
+
+logger = logging.getLogger("djust_start.presence")
 
 
 class BaseLiveView(PresenceMixin, LiveView):
@@ -14,6 +18,10 @@ class BaseLiveView(PresenceMixin, LiveView):
     """
 
     abstract = True
+    # Acknowledge public access (silences djust.S005). Demo views deliberately
+    # render without auth. Override to True / set permission_required = ... on
+    # subclasses that handle sensitive data.
+    login_required = False
     presence_unique_per_connection = True
 
     def mount(self, request, **kwargs):
