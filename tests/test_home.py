@@ -284,3 +284,18 @@ class TestHomeViewActions:
             view.post_message(text=f"msg {i}")
         assert len(view.messages) == 5
         assert view.messages[0]["text"] == "msg 6"
+
+
+@pytest.mark.django_db
+def test_base_template_renders_sync_banner(client):
+    response = client.get("/")
+    content = response.content.decode()
+    assert "Open this page in another window" in content
+
+
+@pytest.mark.django_db
+def test_base_template_renders_presence_chip(client):
+    response = client.get("/")
+    content = response.content.decode()
+    assert "online" in content
+    assert 'class="presence-chip"' in content

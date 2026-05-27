@@ -5,15 +5,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My App{% endblock %}</title>
+    <title>{% block title %}djust starter{% endblock %}</title>
     {% theme_head %}
+    <link rel="stylesheet" href="{% static 'home.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.5rem; border-bottom: 1px solid currentColor;">
-        <a href="/" style="font-weight: bold; text-decoration: none;">My App</a>
-        {% theme_panel %}
+    <nav class="site-nav">
+        <a href="/" class="site-brand">djust starter</a>
+        <div class="nav-right">
+            <span class="presence-chip">{{ online_count|default:1 }} online</span>
+            {% theme_panel %}
+        </div>
     </nav>
+
+    <div class="sync-banner">
+        <span class="sync-arrow">↗</span>
+        Open this page in another window to see real-time sync.
+    </div>
 
     <main>
         {% block content %}{% endblock %}
