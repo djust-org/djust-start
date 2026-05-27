@@ -1,9 +1,5 @@
-import logging
-
 from djust import LiveView
 from djust.presence import PresenceMixin
-
-logger = logging.getLogger("djust_start.presence")
 
 
 class BaseLiveView(PresenceMixin, LiveView):
@@ -20,41 +16,20 @@ class BaseLiveView(PresenceMixin, LiveView):
     """
 
     login_required = False
+    # Anonymous tabs in the same browser share a Django session_key and would
+    # otherwise overwrite each other in the presence dict. Opt in to a
+    # per-connection user_id so the chip reflects real tab count.
     presence_unique_per_connection = True
-
-    def get_presence_user_id(self):
-        # DIAG: trace which branch wins
-        req = getattr(self, "request", None)
-        has_request = req is not None
-        is_auth = bool(req and getattr(req.user, "is_authenticated", False)) if has_request else None
-        flag = getattr(self, "presence_unique_per_connection", False)
-        ws_sid = getattr(self, "_websocket_session_id", None)
-        result = super().get_presence_user_id()
-        logger.warning(
-            "[presence-diag] get_user_id has_req=%s is_auth=%s flag=%r ws_sid=%s → %s",
-            has_request, is_auth, flag, ws_sid, result,
-        )
-        return result
 
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
         self._request_path = request.path
-        ws_sid = getattr(self, "_websocket_session_id", None)
-        flag = getattr(self, "presence_unique_per_connection", "MISSING")
-        logger.warning(
-            "[presence-diag] MOUNT cls=%s ws_sid=%s unique_flag=%r",
-            self.__class__.__name__, ws_sid, flag,
-        )
+        # No-op during HTTP mount (no _websocket_session_id); auto-broadcasts
+        # in WS mount so every open tab's chip refreshes.
         self.track_presence()
-        uid = getattr(self, "_presence_user_id", None)
-        try:
-            ids = [p.get("id") for p in self.list_presences()]
-        except Exception:
-            ids = []
-        logger.warning(
-            "[presence-diag] post-track user_id=%s all_ids=%s online_count=%s",
-            uid, ids, getattr(self, "online_count", "<unset>"),
-        )
+        # WS mount sets self.online_count via track_presence → _refresh_online_count.
+        # HTTP mount skips track_presence entirely, so ensure the attribute exists
+        # for the prerender (template would otherwise fall back to |default:1).
         if not hasattr(self, "online_count"):
             self.online_count = 1
 
