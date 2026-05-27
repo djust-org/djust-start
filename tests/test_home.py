@@ -138,3 +138,17 @@ def test_guestbookmessage_stores_text_and_timestamps():
     msg = GuestbookMessage.objects.create(text="hello")
     assert msg.text == "hello"
     assert msg.created_at is not None
+
+
+@pytest.mark.django_db
+def test_base_live_view_sets_online_count_after_mount():
+    """online_count is always at least 1 — the viewer themselves count."""
+    from apps.shared.base_views import BaseLiveView
+
+    rf = RequestFactory()
+    req = rf.get("/some/path/")
+    req.user = AnonymousUser()
+    view = BaseLiveView()
+    view.mount(req)
+    assert hasattr(view, "online_count")
+    assert view.online_count >= 1
