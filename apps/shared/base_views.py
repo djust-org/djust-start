@@ -1,5 +1,9 @@
+import logging
+
 from djust import LiveView
 from djust.presence import PresenceMixin
+
+logger = logging.getLogger("djust_start.presence")
 
 
 class BaseLiveView(PresenceMixin, LiveView):
@@ -24,12 +28,22 @@ class BaseLiveView(PresenceMixin, LiveView):
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
         self._request_path = request.path
-        # No-op during HTTP mount (no _websocket_session_id); auto-broadcasts
-        # in WS mount so every open tab's chip refreshes.
+        ws_sid = getattr(self, "_websocket_session_id", None)
+        flag = getattr(self, "presence_unique_per_connection", "MISSING")
+        logger.warning(
+            "[presence-diag] MOUNT cls=%s ws_sid=%s unique_flag=%r",
+            self.__class__.__name__, ws_sid, flag,
+        )
         self.track_presence()
-        # WS mount sets self.online_count via track_presence → _refresh_online_count.
-        # HTTP mount skips track_presence entirely, so ensure the attribute exists
-        # for the prerender (template would otherwise fall back to |default:1).
+        uid = getattr(self, "_presence_user_id", None)
+        try:
+            ids = [p.get("id") for p in self.list_presences()]
+        except Exception:
+            ids = []
+        logger.warning(
+            "[presence-diag] post-track user_id=%s all_ids=%s online_count=%s",
+            uid, ids, getattr(self, "online_count", "<unset>"),
+        )
         if not hasattr(self, "online_count"):
             self.online_count = 1
 
