@@ -19,7 +19,7 @@ class BaseLiveView(PresenceMixin, LiveView):
         # as 1, so we floor at 1.
         try:
             self.track_presence()
-            self.online_count = max(1, len(self.list_presences()))
+            self.online_count = len(self.list_presences()) or 1
         except Exception:
             self.online_count = 1
 
