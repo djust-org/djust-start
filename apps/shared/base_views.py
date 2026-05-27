@@ -1,4 +1,3 @@
-import logging
 import random
 
 from djust import LiveView
@@ -6,78 +5,84 @@ from djust.decorators import event_handler
 from djust.presence import PresenceMixin
 from djust.push import push_to_view
 
-logger = logging.getLogger("djust_start.presence")
-
 
 class BaseLiveView(PresenceMixin, LiveView):
-    """Project-wide LiveView base. Adds presence tracking + request path context."""
+    """Project-wide LiveView base. Adds presence tracking + request path context.
+
+    Subclasses should set `presence_key` to share a presence bucket across
+    sessions of the same view (otherwise the chip stays at "1 online").
+
+    NOTE: when djust-org/djust#1605 lands, replace the SILENCED_SYSTEM_CHECKS
+    entries for djust.V001 and djust.V005 with `abstract = True` on this class.
+    """
 
     login_required = False
 
     def get_presence_user_id(self):
+        """Authenticated users count as one identity across their tabs.
+
+        Anonymous viewers get a stable per-instance id so two tabs in the
+        same browser session register as two distinct presences (instead
+        of overwriting each other under the shared session key).
+        """
         request = getattr(self, "request", None)
         if request is not None and getattr(request, "user", None) \
                 and request.user.is_authenticated:
             return str(request.user.id)
         return self._anon_user_id
 
+    def _refresh_online_count(self):
+        """Recompute online_count from the presence backend.
+
+        Stored on the instance (not just in get_context_data context) so
+        djust's render diff picks up the change and patches the chip in
+        the DOM. Putting it only in context kept the template render fresh
+        but the diff layer never saw a 'changed field' and emitted no patches.
+        """
+        try:
+            self.online_count = len(self.list_presences()) or 1
+        except Exception:
+            self.online_count = 1
+
     @event_handler
     def _on_presence_change(self, **kwargs):
-        try:
-            count = len(self.list_presences())
-            logger.warning("[presence] _on_presence_change received count=%d", count)
-        except Exception as e:
-            logger.warning("[presence] _on_presence_change list_presences failed: %s", e)
+        """Re-sync the count when another session joined or left."""
+        self._refresh_online_count()
 
     def _broadcast_presence_change(self):
         try:
-            count = len(self.list_presences())
-            logger.warning("[presence] broadcasting (count from sender perspective=%d)", count)
             push_to_view(
                 f"{self.__class__.__module__}.{self.__class__.__name__}",
                 handler="_on_presence_change",
                 payload={},
             )
-        except Exception as e:
-            logger.warning("[presence] broadcast failed: %s", e)
+        except Exception:
+            pass
 
     def mount(self, request, **kwargs):
         super().mount(request, **kwargs)
         self._request_path = request.path
         self._anon_user_id = f"anon_{random.randint(10_000_000, 99_999_999)}"
-        is_ws = hasattr(self, "_websocket_session_id")
-        logger.warning(
-            "[presence] MOUNT user=%s is_ws=%s",
-            self._anon_user_id, is_ws,
-        )
 
-        if is_ws:
+        # Only track presence in the WebSocket mount — HTTP mount creates
+        # a throwaway view instance just for initial render.
+        if hasattr(self, "_websocket_session_id"):
             try:
                 self.track_presence()
-                count = len(self.list_presences())
-                logger.warning(
-                    "[presence] TRACKED user=%s count_after_track=%d _presence_tracked=%s",
-                    self._anon_user_id, count, self._presence_tracked,
-                )
-            except Exception as e:
-                logger.exception("[presence] TRACK FAILED: %s", e)
+            except Exception:
+                pass
+            self._refresh_online_count()
             self._broadcast_presence_change()
+        else:
+            # HTTP-only render — show at least 1 (self).
+            self.online_count = 1
 
     def untrack_presence(self):
         super().untrack_presence()
+        self._refresh_online_count()
         self._broadcast_presence_change()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["request_path"] = self._request_path
-        try:
-            online = len(self.list_presences())
-            ctx["online_count"] = online or 1
-            logger.warning(
-                "[presence] get_context_data online_count=%d (raw=%d)",
-                ctx["online_count"], online,
-            )
-        except Exception as e:
-            logger.warning("[presence] list_presences in get_context_data failed: %s", e)
-            ctx["online_count"] = 1
         return ctx
