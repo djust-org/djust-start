@@ -24,10 +24,12 @@
         </div>
     </nav>
 
-    <div class="sync-banner">
+    {% if not online_count or online_count == 1 %}
+    <a href="{{ request.path }}" target="_blank" rel="noopener" class="sync-banner">
         <span class="sync-arrow">↗</span>
         Open this page in another window to see real-time sync.
-    </div>
+    </a>
+    {% endif %}
 
     <main>
         {% block content %}{% endblock %}
