@@ -6,7 +6,6 @@ dependencies = [
     "djust[theming,components]>=1.0.0rc12",
     "django>=5.2",
     "uvicorn[standard]",
-    "whitenoise",
 ]
 
 [project.optional-dependencies]
