@@ -81,12 +81,7 @@
     <span class="sep">·</span>
     <a href="https://github.com/djust-org/djust-start" target="_blank" rel="noopener">GitHub</a>
     <span class="sep">·</span>
-    {# Raw button so we can set dj-confirm — dj_button doesn't expose it
-       yet (djust-org/djust#1621). Same .btn classes the component emits. #}
-    <button class="btn btn-danger btn-sm" dj-click="reset_demo"
-            dj-confirm="Wipe all reactions, votes, and messages?">
-      Reset demo
-    </button>
+    {% dj_button label="Reset demo" event="reset_demo" variant="danger" size="sm" confirm="Wipe all reactions, votes, and messages?" %}
   </footer>
 
 </div>{# .home-page #}
