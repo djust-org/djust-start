@@ -7,6 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}djust starter{% endblock %}</title>
     {% theme_head %}
+    {# djust-components ships its own CSS for {% dj_button %}, {% card %},
+       {% code_block %} etc. — theme_head only loads djust-theming's. #}
+    <link rel="stylesheet" href="{% static 'djust_components/components.css' %}">
     <link rel="stylesheet" href="{% static 'home.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
