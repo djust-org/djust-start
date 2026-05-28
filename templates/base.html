@@ -7,9 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}djust starter{% endblock %}</title>
     {% theme_head %}
-    {# djust-components ships its own CSS for {% dj_button %}, {% card %},
-       {% code_block %} etc. — theme_head only loads djust-theming's. #}
-    <link rel="stylesheet" href="{% static 'djust_components/components.css' %}">
     <link rel="stylesheet" href="{% static 'home.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
@@ -43,22 +40,5 @@
         {% block content %}{% endblock %}
     </main>
 </div>
-
-{# Workaround: djust-components's {% code_block %} emits inline <script>
-   tags that don't execute when djust patches them via WS broadcast — so
-   highlight.js doesn't run on re-rendered code blocks. MutationObserver
-   catches every <code class="language-*"> as it appears or changes and
-   re-runs highlight. Cheap; runs only when DOM actually mutates. #}
-<script>
-(function () {
-  function hl() {
-    if (!window.hljs) return;
-    document.querySelectorAll('.code-block code[class^="language-"]:not(.hljs)')
-      .forEach(function (el) { hljs.highlightElement(el); });
-  }
-  window.addEventListener('load', hl);
-  new MutationObserver(hl).observe(document.body, { childList: true, subtree: true });
-})();
-</script>
 </body>
 </html>
