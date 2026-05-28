@@ -325,9 +325,8 @@ body {
     border-radius: 3px;
     font-size: 0.82rem;
 }
-/* Reset button styling comes from {% dj_button variant="danger" %} via
-   djust-components, which maps to .btn-destructive in djust-theming
-   (djust-org/djust#1619). */
+/* Reset button styling comes from {% dj_button variant="danger" %} which
+   djust-components maps to djust-theming's .btn-destructive class. */
 
 /* ─── Mobile ─────────────────────────────────────────────────────────── */
 @media (max-width: 720px) {
