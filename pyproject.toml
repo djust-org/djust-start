@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-django", "ruff", "watchdog"]
+dev = ["pytest", "pytest-django", "ruff", "watchdog", "mypy", "django-stubs"]
 
 [tool.setuptools]
 packages = []
@@ -24,3 +24,41 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+# Type-check only our own code. Third-party packages bring their own types
+# (djust ships py.typed); we don't want to report errors inside them.
+files = ["apps", "config"]
+# Gradual adoption: check the bodies of untyped functions for type errors,
+# but don't yet require every function signature to be annotated. Tighten
+# later by flipping disallow_untyped_defs to true once signatures are added.
+check_untyped_defs = true
+disallow_untyped_defs = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.dev"
+
+[[tool.mypy.overrides]]
+# Auto-generated migrations are not worth type-checking.
+module = ["*.migrations.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+# channels ships no type stubs (no py.typed); don't flag its imports as
+# untyped. djust pulls channels in for the LiveView WebSocket consumer.
+module = ["channels.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Django settings modules build heterogeneous dict literals (DATABASES with
+# a Path NAME, LIVEVIEW_CONFIG with a bool) that mypy infers too narrowly as
+# str->str and then flags. These are framework-shaped, not bugs — relax just
+# the dict-item code here while keeping the rest of the checks (undefined
+# names, bad imports, etc.) active on settings.
+module = ["config.settings.*"]
+disable_error_code = ["dict-item"]
