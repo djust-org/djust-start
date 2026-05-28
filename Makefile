@@ -7,7 +7,7 @@ endif
 VENV := .venv
 PY   := $(VENV)/bin/python
 
-.PHONY: dev test test-verbose migrate makemigrations lint format shell superuser check venv install collectstatic deploy
+.PHONY: dev test test-verbose migrate makemigrations lint format typecheck shell superuser check venv install collectstatic deploy
 
 venv:
 	python3 -m venv $(VENV)
@@ -50,6 +50,9 @@ lint:
 
 format:
 	$(VENV)/bin/ruff format .
+
+typecheck:
+	$(VENV)/bin/mypy
 
 shell:
 	$(PY) manage.py shell
