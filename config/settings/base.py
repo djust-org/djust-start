@@ -142,9 +142,8 @@ if DJUST_STATE_BACKEND.startswith(("redis://", "rediss://")):
     DJUST_REDIS_URL = DJUST_STATE_BACKEND
 
 DJUST_CONFIG = {
-    # C003: we use uvicorn, not daphne, for ASGI.
     # T002: dj-root is auto-inferred — informational only.
-    "suppress_checks": ["C003", "T002"],
+    "suppress_checks": ["T002"],
 }
 
 # Fine-grained djust behaviour. All values below are the defaults — uncomment
