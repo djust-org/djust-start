@@ -8,11 +8,17 @@ DEBUG = False
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 # Required — set to your domain(s), e.g. ALLOWED_HOSTS=myapp.com,www.myapp.com
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()]
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()
+]
 
 # Required when behind a reverse proxy, load balancer, or PaaS.
 # Example: CSRF_TRUSTED_ORIGINS=https://myapp.com,https://www.myapp.com
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
 
 # Force HTTPS and instruct browsers to remember it for 1 year.
 SECURE_SSL_REDIRECT = True
@@ -30,7 +36,9 @@ CSRF_COOKIE_SECURE = True
 #   CHANNEL_LAYERS = {
 #       "default": {
 #           "BACKEND": "channels_redis.core.RedisChannelLayer",
-#           "CONFIG": {"hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379/0")]},
+#           "CONFIG": {
+#               "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379/0")]
+#           },
 #       }
 #   }
 CHANNEL_LAYERS = {

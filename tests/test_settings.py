@@ -1,5 +1,6 @@
-import pytest
 from urllib.parse import urlparse
+
+import pytest
 
 
 def _parse_db_url(url: str) -> dict:

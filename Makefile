@@ -7,7 +7,7 @@ endif
 VENV := .venv
 PY   := $(VENV)/bin/python
 
-.PHONY: dev test test-verbose migrate makemigrations lint format typecheck shell superuser check venv install collectstatic deploy
+.PHONY: dev test test-verbose migrate makemigrations lint format typecheck hooks pre-commit shell superuser check venv install collectstatic deploy
 
 venv:
 	python3 -m venv $(VENV)
@@ -53,6 +53,12 @@ format:
 
 typecheck:
 	$(VENV)/bin/mypy
+
+hooks:
+	$(VENV)/bin/pre-commit install
+
+pre-commit:
+	$(VENV)/bin/pre-commit run --all-files
 
 shell:
 	$(PY) manage.py shell

@@ -9,7 +9,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
 
 # Comma-separated list of allowed hostnames. In production add your domain.
 # Example: ALLOWED_HOSTS=myapp.com,www.myapp.com
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+]
 
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -17,14 +19,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "djust",                           # Core LiveView framework
-    "apps.shared",                     # BaseLiveView, context processors, theming handlers
-    "apps.home",                       # Home page — your first LiveView
+    "djust",  # Core LiveView framework
+    "apps.shared",  # BaseLiveView, context processors, theming
+    "apps.home",  # Home page — your first LiveView
 ]
 
 # djust[theming] — 60+ theme packs, dark/light mode, CSS variable system.
 try:
     import djust.theming  # noqa: F401
+
     INSTALLED_APPS.append("djust.theming")
 except ImportError:
     pass
@@ -32,6 +35,7 @@ except ImportError:
 # djust[components] — buttons, cards, modals, tabs, and more.
 try:
     import djust.components  # noqa: F401
+
     INSTALLED_APPS.append("djust.components")
 except ImportError:
     pass
@@ -59,6 +63,7 @@ _context_processors = [
 ]
 try:
     import djust.theming.context_processors  # noqa: F401
+
     _context_processors.append("djust.theming.context_processors.theme_context")
 except ImportError:
     pass
@@ -156,36 +161,32 @@ LIVEVIEW_CONFIG = {
     # automatically by {% theme_head %} — no manual <link> needed.
     # Options: "bootstrap5" | "bootstrap4" | "tailwind" | "plain" | None
     "css_framework": "bootstrap5",
-
     # Event handler security mode.
-    # "strict" — only @event_handler / @action decorated methods can be called (default, recommended).
+    # "strict" — only @event_handler / @action decorated methods can be
+    #            called (default, recommended).
     # "warn"   — allow undecorated methods but log a deprecation warning.
     # "open"   — no restriction (legacy, not recommended).
     # "event_security": "strict",
-
     # Set to False to fall back to HTTP polling instead of WebSockets.
     # "use_websocket": True,
-
     # Hot View Replacement — reloads LiveView Python code in dev without
     # disconnecting the client or losing state. Requires watchdog (in dev
     # deps). Dev-only: enabled in config/settings/dev.py — do NOT set here
     # in base.py because prod.py inherits base and would also pick it up
     # (prod doesn't want hot reload, and watchdog isn't installed there).
-
     # Rate limiting for WebSocket events (token bucket algorithm).
     # "rate_limit": {
     #     "rate": 100,                  # sustained events per second per connection
     #     "burst": 20,                  # burst allowance above the rate
     #     "max_connections_per_ip": 10, # max concurrent connections per IP
     # },
-
-    # Maximum incoming WebSocket message size in bytes. 0 = no limit (not recommended in production).
+    # Maximum incoming WebSocket message size in bytes. 0 = no limit
+    # (not recommended in production).
     # "max_message_size": 65536,  # 64 KB default
-
     # Enable detailed VDOM patching logs in the server console (dev only).
     # "debug_vdom": False,
-
-    # Raise TypeError for non-serializable view state values instead of silently coercing to str().
+    # Raise TypeError for non-serializable view state values instead of
+    # silently coercing to str().
     # "strict_serialization": False,
 }
 
@@ -202,6 +203,6 @@ DJUST_THEMING = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"  # Change to your app's timezone, e.g. "America/New_York", "Europe/London"
+TIME_ZONE = "UTC"  # e.g. "America/New_York", "Europe/London"
 USE_I18N = True
 USE_TZ = True

@@ -51,8 +51,7 @@ class HomeView(BaseLiveView):
             "text", "created_at"
         )
         self.messages = [
-            {"text": r["text"], "created_at": r["created_at"].isoformat()}
-            for r in rows
+            {"text": r["text"], "created_at": r["created_at"].isoformat()} for r in rows
         ]
 
     # ─── @action handlers ────────────────────────────────────────────────
