@@ -43,5 +43,22 @@
         {% block content %}{% endblock %}
     </main>
 </div>
+
+{# Workaround: djust-components's {% code_block %} emits inline <script>
+   tags that don't execute when djust patches them via WS broadcast — so
+   highlight.js doesn't run on re-rendered code blocks. MutationObserver
+   catches every <code class="language-*"> as it appears or changes and
+   re-runs highlight. Cheap; runs only when DOM actually mutates. #}
+<script>
+(function () {
+  function hl() {
+    if (!window.hljs) return;
+    document.querySelectorAll('.code-block code[class^="language-"]:not(.hljs)')
+      .forEach(function (el) { hljs.highlightElement(el); });
+  }
+  window.addEventListener('load', hl);
+  new MutationObserver(hl).observe(document.body, { childList: true, subtree: true });
+})();
+</script>
 </body>
 </html>
