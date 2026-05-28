@@ -12,3 +12,13 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
 }
+
+# Hot View Replacement — reloads LiveView Python code in dev without
+# disconnecting the client or losing state. Requires watchdog (in dev
+# extras: `pip install -e ".[dev]"`). Declared explicitly so the intent
+# is visible alongside the Makefile note about not running uvicorn with
+# --reload (uvicorn's worker restart would defeat HVR's state preservation).
+LIVEVIEW_CONFIG = {
+    **LIVEVIEW_CONFIG,  # noqa: F405 — base.py exports this via `import *`
+    "hvr_enabled": True,
+}

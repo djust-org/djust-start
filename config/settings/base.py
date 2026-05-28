@@ -167,8 +167,10 @@ LIVEVIEW_CONFIG = {
     # "use_websocket": True,
 
     # Hot View Replacement — reloads LiveView Python code in dev without
-    # disconnecting the client or losing state. Requires watchdog (in dev deps).
-    # "hvr_enabled": True,
+    # disconnecting the client or losing state. Requires watchdog (in dev
+    # deps). Dev-only: enabled in config/settings/dev.py — do NOT set here
+    # in base.py because prod.py inherits base and would also pick it up
+    # (prod doesn't want hot reload, and watchdog isn't installed there).
 
     # Rate limiting for WebSocket events (token bucket algorithm).
     # "rate_limit": {

@@ -23,7 +23,15 @@ install: venv
 
 dev:
 	$(PY) manage.py migrate --run-syncdb
-	$(VENV)/bin/uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --reload
+	@# NOTE: NO --reload here. uvicorn --reload restarts the worker on
+	@# file save, dropping LiveView WebSocket state — symptom: the page
+	@# flashes the new design then snaps back to the old one as the
+	@# client reconnects against cached old VDOM. djust's Hot View
+	@# Replacement (HVR) auto-enables when DEBUG=True and watchdog is
+	@# installed (in [project.optional-dependencies].dev) and preserves
+	@# form input, scroll position, and view state across reloads.
+	@# Look for "[HotReload] Hot reload enabled..." in startup logs.
+	$(VENV)/bin/uvicorn config.asgi:application --host 0.0.0.0 --port 8000
 
 test:
 	$(VENV)/bin/pytest
