@@ -7,7 +7,7 @@ endif
 VENV := .venv
 PY   := $(VENV)/bin/python
 
-.PHONY: dev test test-verbose migrate makemigrations lint format shell superuser check venv install collectstatic
+.PHONY: dev test test-verbose migrate makemigrations lint format shell superuser check venv install collectstatic deploy
 
 venv:
 	python3 -m venv $(VENV)
@@ -54,3 +54,6 @@ check:
 
 collectstatic:
 	$(PY) manage.py collectstatic --noinput
+
+deploy:
+	$(VENV)/bin/djust deploy
