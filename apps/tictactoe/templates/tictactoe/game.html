@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load live_tags djust_components %}
+{# djust:partial — dj-view lives on the wrapper in base.html; we point it at
+   this view so the board (and nav presence chip) patch reactively. #}
+
+{% block title %}Tic-Tac-Toe — djust start{% endblock %}
+{% block live_view %}apps.tictactoe.views.TicTacToeView{% endblock %}
+
+{% block content %}
+<div class="home-page">
+
+  <div class="hero-header">
+    <h1 class="hero-title">Two-player Tic-Tac-Toe</h1>
+    <p class="hero-tagline">
+      {% if mark %}You're playing as <strong>{{ mark }}</strong>.{% else %}Pick a seat below to play, or just watch.{% endif %}
+      Open this page in a <strong>separate browser or window</strong> to take the other seat — every move syncs instantly over WebSocket. No API, no polling, no JavaScript. A seat frees up the moment that player leaves or closes the tab.
+    </p>
+  </div>
+
+  <!-- code panel ┃ live board ─────────────────────────────────────────── -->
+  <section class="hero-demo">
+    <div class="demo-code">
+      {% code_block language="python" filename="apps/tictactoe/views.py" code=play_src %}
+    </div>
+    <div class="demo-live">
+      <div class="demo-label">
+        {% if winner == "draw" %}It's a draw — start a new game.
+        {% elif winner %}{{ winner }} wins!{% if winner == mark %} You win! 🎉{% endif %}
+        {% elif not mark %}
+          {% if seats_full %}Both seats are taken — you're spectating.
+          {% elif x_taken or o_taken %}Pick the open seat to join.
+          {% else %}Be the first to play — pick X or O.{% endif %}
+        {% elif turn == mark %}Your turn ({{ mark }})
+        {% else %}Waiting for {{ turn }} to move…{% endif %}
+      </div>
+
+      <div class="tictactoe-board" data-you="{{ mark }}">
+        {% for cell in cells %}
+          <button class="tictactoe-cell{% if cell.mark %} tictactoe-cell--filled{% endif %}"
+                  dj-click="play" data-cell="{{ cell.i }}" data-mark="{{ cell.mark }}"
+                  aria-label="Square {{ cell.i }}"
+                  {% if cell.mark or winner or not mark or turn != mark %}disabled{% endif %}>{{ cell.mark }}</button>
+        {% endfor %}
+      </div>
+
+      <div class="tictactoe-seats">
+        {% if mark %}
+          <button class="reaction-btn tictactoe-reset" dj-click="leave_seat">Leave seat ({{ mark }})</button>
+        {% else %}
+          <button class="reaction-btn tictactoe-reset" dj-click="take_seat" data-seat="X"
+                  {% if x_taken %}disabled{% endif %}>{% if x_taken %}X is taken{% else %}Play as X{% endif %}</button>
+          <button class="reaction-btn tictactoe-reset" dj-click="take_seat" data-seat="O"
+                  {% if o_taken %}disabled{% endif %}>{% if o_taken %}O is taken{% else %}Play as O{% endif %}</button>
+        {% endif %}
+        <button class="reaction-btn tictactoe-reset" dj-click="reset">New game</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

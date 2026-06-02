@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "djust",  # Core LiveView framework
     "apps.shared",  # BaseLiveView, context processors, theming
     "apps.home",  # Home page — your first LiveView
+    "apps.tictactoe",  # Two-player real-time tic-tac-toe demo
 ]
 
 # djust[theming] — 60+ theme packs, dark/light mode, CSS variable system.
@@ -133,7 +134,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Register every module that contains LiveView subclasses you want mountable
 # over WebSockets. Unregistered views will silently fail to connect.
-LIVEVIEW_ALLOWED_MODULES = ["apps.home.views"]
+LIVEVIEW_ALLOWED_MODULES = ["apps.home.views", "apps.tictactoe.views"]
 
 # LiveView state backend.
 # "memory"          — in-process, lost on restart. Fine for single-server dev.
@@ -145,7 +146,10 @@ if DJUST_STATE_BACKEND.startswith(("redis://", "rediss://")):
 
 DJUST_CONFIG = {
     # T002: dj-root is auto-inferred — informational only.
-    "suppress_checks": ["T002"],
+    # V004: false positive on `handle_presence_leave` — it's a real PresenceMixin
+    #       lifecycle hook (called by the framework, must NOT carry @event_handler),
+    #       but it's missing from the V004 lifecycle allowlist in djust core.
+    "suppress_checks": ["T002", "V004"],
 }
 
 # Fine-grained djust behaviour. All values below are the defaults — uncomment
