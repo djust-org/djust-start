@@ -18,11 +18,14 @@ jobs:
       - name: Install uv
         run: pip install uv
 
+      # Install exactly what uv.lock pins, the same set the djustlive rootfs
+      # builder ships. An unlocked install pulled whatever djust was newest
+      # and made CI test a different stack than production.
       - name: Install dependencies
-        run: uv pip install -e ".[dev]" --system
+        run: uv sync --frozen --extra dev --python 3.12
 
       - name: Run tests
-        run: pytest
+        run: uv run --frozen pytest
         env:
           SECRET_KEY: ci-test-secret-key-not-for-production
           DEBUG: "True"
