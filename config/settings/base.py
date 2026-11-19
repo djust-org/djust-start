@@ -158,6 +158,12 @@ DJUST_CONFIG = {
 # choice from colliding with other djust apps on the same host.
 COOKIE_NAMESPACE = "djstart"
 SESSION_COOKIE_NAME = f"{COOKIE_NAMESPACE}_sessionid"
+# Sessions live in a signed cookie, not the database. Every anonymous page
+# view creates a session, and nothing deletes expired rows from a database
+# session table: on djustlive the django_session table grew to 121 MiB and
+# filled the guest's 128 MiB /var, so every write (and so every GET /)
+# failed with "database or disk is full". A signed cookie needs no storage.
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 CSRF_COOKIE_NAME = f"{COOKIE_NAMESPACE}_csrftoken"
 
 LIVEVIEW_CONFIG = {

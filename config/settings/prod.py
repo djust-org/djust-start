@@ -71,3 +71,20 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@example.com")
 _admins_raw = os.environ.get("ADMINS", "")
 if _admins_raw:
     ADMINS = [tuple(a.split(":", 1)) for a in _admins_raw.split(",") if ":" in a]
+
+# Log errors to the console. Without this, Django only mails tracebacks to
+# ADMINS when DEBUG=False, and on djustlive the console (the supervisor log)
+# is the only place a 500's traceback can be read.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "ERROR"},
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
